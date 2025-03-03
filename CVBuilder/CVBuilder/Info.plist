@@ -4,5 +4,14 @@
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Lato-Black.ttf</string>
+		<string>Lato-Bold.ttf</string>
+		<string>Lato-ExtraBold.ttf</string>
+		<string>Lato-Regular.ttf</string>
+		<string>SourceSansPro-Regular.otf</string>
+		<string>Lato-Medium.ttf</string>
+	</array>
 </dict>
 </plist>
