@@ -38,26 +38,26 @@ final class Coordinator: NSObject {
 //        navigationController.setViewControllers([launchController],
 //                                                animated: true)
 //        
-//        window?.rootViewController = navigationController
-//        window?.makeKeyAndVisible()
+        window?.rootViewController = navigationController
+        window?.makeKeyAndVisible()
 //        
 //        sinkWithNotificationCenter()
 //        
-        tabBarView = MainTabbedView(coordinator: self)
-        
-        Task {
-            await fetchAppConfigAndPurchases()
-            
-            await MainActor.run { [weak self] in
-                guard let self else { return }
+//        tabBarView = MainTabbedView(coordinator: self)
+//        
+//        Task {
+//            await fetchAppConfigAndPurchases()
+//            
+//            await MainActor.run { [weak self] in
+//                guard let self else { return }
               //  if isOnboardingCompleted || PurchaseManager.shared.isPremium {
                     startMainFlow()
 //                } else {
 //                    startOnboarding()
 //                }
-            }
+//            }
             
-        }
+//        }
         
         PaymentRefunder.shared.closeAction = { [weak self] in
             self?.popToRootView()
@@ -71,7 +71,7 @@ final class Coordinator: NSObject {
             guard let self else { return }
             
             navigationController.setViewControllers(
-                [UIHostingController(rootView: tabBarView)],
+                [UIHostingController(rootView: ContentView())],
                 animated: false
             )
         })
