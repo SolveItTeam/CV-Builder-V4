@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		300FA9662D7642E200B8832F /* sharelink-for-swiftui in Frameworks */ = {isa = PBXBuildFile; productRef = 300FA9652D7642E200B8832F /* sharelink-for-swiftui */; };
 		3069FA7E2D74F81E00C61E15 /* RswiftLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 3069FA7D2D74F81E00C61E15 /* RswiftLibrary */; };
 		30B90C922D70931F00FC3505 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 30B90C912D70931F00FC3505 /* KeychainAccess */; };
 		30B90C952D70933300FC3505 /* Reachability in Frameworks */ = {isa = PBXBuildFile; productRef = 30B90C942D70933300FC3505 /* Reachability */; };
@@ -50,6 +51,7 @@
 			files = (
 				30B90C922D70931F00FC3505 /* KeychainAccess in Frameworks */,
 				30B90C9F2D70952400FC3505 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				300FA9662D7642E200B8832F /* sharelink-for-swiftui in Frameworks */,
 				30B90C952D70933300FC3505 /* Reachability in Frameworks */,
 				30B90CA12D70952400FC3505 /* FirebaseCrashlytics in Frameworks */,
 				30B90C9D2D70952400FC3505 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
@@ -109,6 +111,7 @@
 				30B90CA02D70952400FC3505 /* FirebaseCrashlytics */,
 				30B90CA22D70952400FC3505 /* FirebaseRemoteConfig */,
 				3069FA7D2D74F81E00C61E15 /* RswiftLibrary */,
+				300FA9652D7642E200B8832F /* sharelink-for-swiftui */,
 			);
 			productName = CVBuilder;
 			productReference = 30B90C2D2D7073C200FC3505 /* CVBuilder.app */;
@@ -149,6 +152,7 @@
 				30B90C962D70938000FC3505 /* XCRemoteSwiftPackageReference "AdaptySDK-iOS" */,
 				30B90C992D70952400FC3505 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				3069FA7C2D74F81E00C61E15 /* XCRemoteSwiftPackageReference "R.swift" */,
+				300FA9642D7642E200B8832F /* XCRemoteSwiftPackageReference "sharelink-for-swiftui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 30B90C2E2D7073C200FC3505 /* Products */;
@@ -413,6 +417,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		300FA9642D7642E200B8832F /* XCRemoteSwiftPackageReference "sharelink-for-swiftui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftuiux/sharelink-for-swiftui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
 		3069FA7C2D74F81E00C61E15 /* XCRemoteSwiftPackageReference "R.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mac-cain13/R.swift.git";
@@ -456,6 +468,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		300FA9652D7642E200B8832F /* sharelink-for-swiftui */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 300FA9642D7642E200B8832F /* XCRemoteSwiftPackageReference "sharelink-for-swiftui" */;
+			productName = "sharelink-for-swiftui";
+		};
 		3069FA7D2D74F81E00C61E15 /* RswiftLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3069FA7C2D74F81E00C61E15 /* XCRemoteSwiftPackageReference "R.swift" */;

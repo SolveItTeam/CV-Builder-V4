@@ -1,4 +1,5 @@
 import SwiftUI
+import sharelink_for_swiftui
 
 import SwiftUI
 import PDFKit
@@ -24,6 +25,67 @@ struct Skills {
     let description: String
 }
 
+import SwiftUI
+import PDFKit
+import UniformTypeIdentifiers
+
+// MARK: - Transferable PDFDocument Extensions
+extension PDFDocument {
+    // Capture the first page of the PDF as a UIImage
+    public var imageRepresenation: UIImage? {
+        guard let pdfPage = self.page(at: 0) else { return nil }
+        let pageBounds = pdfPage.bounds(for: .cropBox)
+        
+        let renderer = UIGraphicsImageRenderer(size: pageBounds.size)
+        let image = renderer.image { ctx in
+            UIColor.white.set()
+            ctx.fill(pageBounds)
+            
+            ctx.cgContext.translateBy(x: 0.0, y: pageBounds.size.height)
+            ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+            
+            UIGraphicsPushContext(ctx.cgContext)
+            pdfPage.draw(with: .cropBox, to: ctx.cgContext)
+            UIGraphicsPopContext()
+        }
+        return image
+    }
+    
+    // (Optional) Return the PDF’s title
+    public var title: String? {
+        guard
+            let attributes = self.documentAttributes,
+            let titleAttribute = attributes[PDFDocumentAttribute.titleAttribute]
+        else {
+            return nil
+        }
+        return titleAttribute as? String
+    }
+}
+
+// Conform PDFDocument to Transferable so it can be shared
+extension PDFDocument: Transferable {
+    public static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .pdf) { pdf in
+            guard let data = pdf.dataRepresentation() else {
+                fatalError("Could not create a pdf file from dataRepresentation()")
+            }
+            var fileURL = FileManager.default.temporaryDirectory
+            
+            // If the PDF document has a title, use that as the filename
+            if let title = pdf.title {
+                fileURL = fileURL.appendingPathComponent(title).appendingPathExtension("pdf")
+            } else {
+                // Fallback if no title is set
+                fileURL = fileURL.appendingPathComponent("cvDocument").appendingPathExtension("pdf")
+            }
+            
+            try data.write(to: fileURL)
+            return SentTransferredFile(fileURL)
+        }
+    }
+}
+
 struct CVConstructor {
     let fullname: String
     let speciality: String
@@ -42,8 +104,7 @@ struct WorkExperienceInput: Identifiable {
     var speciality: String = ""
     var companyName: String = ""
     var country: String = ""
-    // Duties entered as a comma‑separated string (later split into an array)
-    var duties: String = ""
+    var duties: [String] = []
 }
 
 struct EducationInput: Identifiable {
@@ -106,7 +167,42 @@ struct ImagePicker: UIViewControllerRepresentable {
     
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 }
-
+// 2. Create a new view for entering duties with a maximum of 10 items.
+struct DutiesInputView: View {
+    @Binding var duties: [String]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(duties.indices, id: \.self) { index in
+                HStack {
+                    TextField("Duty \(index + 1)", text: $duties[index])
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    // Allow removal if there’s at least one duty.
+                    if duties.count > 1 {
+                        Button(action: {
+                            duties.remove(at: index)
+                        }) {
+                            Image(systemName: "minus.circle")
+                        }
+                    }
+                }
+            }
+            if duties.count < 10 {
+                Button(action: {
+                    duties.append("")
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle")
+                        Text("Add Duty")
+                    }
+                }
+            } else {
+                Text("Maximum 10 duties reached")
+                    .foregroundColor(.red)
+            }
+        }
+    }
+}
 
 import SwiftUI
 import PDFKit
@@ -122,6 +218,11 @@ struct ContentView: View {
     @State private var workExperiences: [WorkExperienceInput] = []
     @State private var educationExperiences: [EducationInput] = []
     @State private var skills: [SkillInput] = []
+    @State private var pdfDocument: PDFDocument = PDFDocument()      // Now a non-optional, empty by default
+    @State private var data: Data = Data()                           // Holds raw PDF data, if needed
+    @State private var previewImage: Image = Image(systemName: "doc")// For share preview
+    @State private var filename: String = "myCV"                     // The PDF's title / filename
+    
     
     private let maxWorkExperience = 4
     private let maxEducation = 2
@@ -129,7 +230,6 @@ struct ContentView: View {
     @State private var selectedImage: UIImage? = nil
     @State private var showImagePicker: Bool = false
     // MARK: - PDF & Share States
-    @State private var pdfDocument: PDFDocument?
     @State private var showShareSheet = false
     @State private var temporaryFileURL: URL?
     @StateObject var cvBuilder: CVBuilder = CVBuilder()
@@ -191,8 +291,8 @@ struct ContentView: View {
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                 DatePicker("Start Date", selection: $work.workStartedDate, displayedComponents: .date)
                                 DatePicker("End Date", selection: $work.workEndedDate, displayedComponents: .date)
-                                TextField("Duties (separated by commas)", text: $work.duties)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                
+                                DutiesInputView(duties: $work.duties)
                             }
                             .padding()
                             .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
@@ -255,7 +355,6 @@ struct ContentView: View {
                         }
                     }
                     
-                    // MARK: PDF Generation & Preview
                     Button("Generate PDF") {
                         generatePDF()
                     }
@@ -265,22 +364,26 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     
-                    if let pdfDocument {
+                    if pdfDocument.pageCount > 0 {
                         Text("PDF Preview")
                             .font(.headline)
                         PDFKitRepresentedView(pdfDocument: pdfDocument)
                             .frame(minHeight: 300)
                     }
                     
-                    if pdfDocument != nil {
-                        Button("Share PDF") {
-                            if let doc = pdfDocument { exportPDF(document: doc) }
+                    if pdfDocument.pageCount > 0 {
+                        
+                        if pdfDocument.pageCount > 0 {
+                            ShareLink(
+                                item: pdfDocument,
+                                preview: SharePreview(
+                                    filename,
+                                    image: previewImage
+                                )
+                            )
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                        
+                        
                     }
                 }
                 
@@ -288,8 +391,7 @@ struct ContentView: View {
             .padding()
             // Present share sheet when needed
             .sheet(isPresented: $showShareSheet) {
-                ShareSheet(activityItems: [temporaryFileURL])
-                    .presentationDetents([.medium])
+                
             }
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage)
@@ -327,17 +429,13 @@ struct ContentView: View {
     
     private func generatePDF() {
         let workArray: [Work] = workExperiences.reversed().map { input in
-            let duties = input.duties
-                .split(separator: ",")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
             return Work(
                 workStartedDate: input.workStartedDate,
                 workEndedDate: input.workEndedDate,
                 speciality: input.speciality,
                 companyName: input.companyName,
                 country: input.country,
-                duties: duties
+                duties: input.duties
             )
         }
         
@@ -757,23 +855,35 @@ struct ContentView: View {
         
         // -- FINALIZE --
         self.pdfDocument = pdfDoc
+        
+        exportPDF(document: pdfDoc)
     }
     
     private func exportPDF(document: PDFDocument) {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("myCV.pdf")
         if document.write(to: tempURL) {
-            print("PDF successfully saved at:", tempURL)
+            print("PDF successfully saved at: \(tempURL)")
             
             do {
-                let attributes = try FileManager.default.attributesOfItem(atPath: tempURL.path)
-                let fileSize = attributes[.size] as? Int ?? 0
-                print("PDF file size: \(fileSize) bytes")
+                let fileData = try Data(contentsOf: tempURL)
+                // Reinitialize as a new PDFDocument from data
+                if let generatedPDF = PDFDocument(data: fileData),
+                   let firstPageImage = generatedPDF.imageRepresenation {
+                    
+                    // Set the PDF's document title (used in .transferRepresentation)
+                    generatedPDF.documentAttributes = [
+                        PDFDocumentAttribute.titleAttribute: filename
+                    ]
+                    
+                    // Update our @State values
+                    self.pdfDocument = generatedPDF
+                    self.data = fileData
+                    self.previewImage = Image(uiImage: firstPageImage)
+                }
             } catch {
-                print("Failed to get file attributes:", error)
+                print("Error reading temp PDF back as Data: \(error)")
             }
             
-            temporaryFileURL = tempURL
-            showShareSheet = true
         } else {
             print("Failed to write PDF file.")
         }
