@@ -1,7 +1,7 @@
 import Foundation
 
 enum TabFlow: Int, CaseIterable {
-    case home = 0, templates, works, profile
+    case home = 0, profile, plus, history, settings
 
     var id: Int {
         return self.rawValue
@@ -10,26 +10,15 @@ enum TabFlow: Int, CaseIterable {
     var active: ImageResource {
         switch self {
         case .home:
-            return .woman
-        case .templates:
-            return .woman
-        case .works:
-            return .woman
+            return .home
         case .profile:
-            return .woman
-        }
-    }
-
-    var localizedTitle: String {
-        switch self {
-        case .home:
-            return ""
-        case .templates:
-            return ""
-        case .works:
-            return ""
-        case .profile:
-            return ""
+            return .profile
+        case .plus:
+            return .plus
+        case .history:
+            return .history
+        case .settings:
+            return .settings
         }
     }
 }
