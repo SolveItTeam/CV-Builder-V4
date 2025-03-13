@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct MainTabbedView: View {
     
     @State var selectedTab = 0
@@ -11,9 +10,6 @@ struct MainTabbedView: View {
             TabView(selection: $selectedTab) {
                 HomeView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.home.rawValue)
-                
-                ProfileView(viewModel: .init(coordinator: coordinator))
-                    .tag(TabFlow.profile.rawValue)
                 
                 SettingsView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.plus.rawValue)
@@ -28,11 +24,18 @@ struct MainTabbedView: View {
             
             VStack {
                 ZStack{
-                    
                     HStack{
                         ForEach((TabFlow.allCases), id: \.self){ item in
                             Button{
-                                selectedTab = item.rawValue
+                                switch selectedTab {
+                                case 1:
+                                    coordinator.showProfileView()
+                                case 2:
+                                    break
+                                default:
+                                    selectedTab = item.rawValue
+                                }
+                               
                             } label: {
                                 CustomTabItem(imageName: item.active, isActive: (selectedTab == item.rawValue), isPlusTab: item.rawValue == TabFlow.plus.rawValue)
                             }
@@ -59,7 +62,7 @@ extension MainTabbedView{
                 .resizable()
                 .renderingMode(.template)
                 .foregroundColor(isPlusTab ? .c0A0A0A : .white)
-                .frame(width: 20, height: 20)
+                .frame(width: isPlusTab ? 14 : 20, height: isPlusTab ? 14 : 20)
         
             Spacer()
         }

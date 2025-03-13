@@ -8,4 +8,13 @@ final class HomeViewModel: ObservableObject {
     init(coordinator: Coordinator) {
         self.coordinator = coordinator
     }
+    
+    func showPaywall() {
+        coordinator.showPaywall()
+    }
+    
+    func showResumeTemplates() {
+        coordinator.showResumeTemplates()
+        
+    }
 }

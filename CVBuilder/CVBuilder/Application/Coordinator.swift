@@ -10,7 +10,6 @@ final class Coordinator: NSObject {
     let cancelBag: Cancellable
     var reachibility: Reachability?
     var shouldShowPaywall: Bool = true
-    private var tabBarView: MainTabbedView!
     private let remoteConfig: AppRemoteConfigService = .shared
     
     private var isPaywallPresented: Bool  = false
@@ -27,7 +26,6 @@ final class Coordinator: NSObject {
         try? reachibility?.startNotifier()
         self.keychainStorage = .init()
         super.init()
-        //setupTabbarAppearance()
         UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(named: "AccentColor")
         setupNetworkObserver()
     }
@@ -66,12 +64,12 @@ final class Coordinator: NSObject {
     
     func startMainFlow() {
         guard let window else { return }
-        
+        let vc = UIHostingController(rootView: MainTabbedView(coordinator: self))
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: { [weak self] in
             guard let self else { return }
             
             navigationController.setViewControllers(
-                [UIHostingController(rootView: ContentView())],
+                [vc],
                 animated: false
             )
         })
@@ -95,6 +93,18 @@ final class Coordinator: NSObject {
 //        window?.rootViewController = navigationController
 //        window?.makeKeyAndVisible()
 //    }
+    
+    func showProfileView() {
+        let profileCV = ProfileView(viewModel: .init(coordinator: self))
+        
+        navigationController.pushViewController((UIHostingController(rootView:  profileCV)), animated: true)
+    }
+    
+    func showResumeTemplates() {
+        let cvTemplate = ProfileView(viewModel: .init(coordinator: self))
+        
+        navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
+    }
 
     func showPaywall() {
 //        guard shouldShowPaywall, !isPaywallPresented else { return }
