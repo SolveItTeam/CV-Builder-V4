@@ -1,8 +1,13 @@
 import SwiftUI
 
+enum FocusableField: Hashable {
+    case firstName, lastName, email, jobTitle, summary, phone, site, location, companyName, position, country, jobDescription, universityName, degree
+    
+}
+
 struct ProfileView: View {
-    @ObservedObject var viewModel: ProfileViewModel
-    @FocusState var isKeyboardVisible: Bool
+    @FocusState private var isKeyboardVisible: FocusableField?
+    @StateObject var viewModel: ProfileViewModel
     
     
     var body: some View {
@@ -60,7 +65,6 @@ struct ProfileView: View {
                     }
                     .padding(.vertical, 20)
                     
-                    // TabView(selection: $viewModel.profileData) {
                     VStack(spacing: 0) {
                         switch viewModel.profileData {
                         case .profile:
@@ -76,27 +80,13 @@ struct ProfileView: View {
                         }
                     }
                     .padding(.horizontal, 2)
-                    
-                    //profileInfoView()
-                    //  .tag(ProfileDataType.profile)
-                    //   contactView()
-                    //  .tag(ProfileDataType.contact)
-                    //    workExperinceView()
-                    //   .tag(ProfileDataType.workExperience)
-                    //   studyView()
-                    //   .tag(ProfileDataType.education)
-                    //   skillsView()
-                    //     .tag(ProfileDataType.skills)
-                    //                }
-                    //                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    //                .indexViewStyle(.page(backgroundDisplayMode: .never))
                 }
                 .padding(.horizontal, 16)
             }
             
             HStack(spacing: 14) {
                 Button {
-                    
+                    viewModel.popView()
                 } label: {
                     Image(.left)
                         .resizable()
@@ -112,7 +102,18 @@ struct ProfileView: View {
                 }
                 
                 Button {
-                    
+                    switch viewModel.profileData {
+                    case .profile:
+                        viewModel.profileData = .contact
+                    case .contact:
+                        viewModel.profileData = .workExperience
+                    case .workExperience:
+                        viewModel.profileData = .education
+                    case .education:
+                        viewModel.profileData = .skills
+                    case .skills:
+                        break
+                    }
                 } label: {
                     HStack(spacing: 14) {
                         Text(R.string.localizable.next())
@@ -136,10 +137,39 @@ struct ProfileView: View {
             ImagePicker(image: $viewModel.selectedImage)
         }
         .sheet(isPresented: $viewModel.showWorkSheet) {
-            DutiesInputView(duties: $viewModel.newDuties) {
-//                viewModel.workExperiences.append(WorkExperienceInput(duties: viewModel.newDuties))
-//                viewModel.newDuties = [""]
-//                viewModel.showWorkSheet = false
+            WorkInputView(work: $viewModel.newWorkExperience) {
+                viewModel.workExperiences.append(viewModel.newWorkExperience)
+                viewModel.newWorkExperience = WorkExperienceInput(duties: [""])
+                viewModel.showWorkSheet = false
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showEducationSheet) {
+            EducationInputView(edu: $viewModel.newEducationExperience) {
+                viewModel.educationExperiences.append(viewModel.newEducationExperience)
+                viewModel.newEducationExperience = EducationInput()
+                viewModel.showEducationSheet = false
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
             }
         }
     }
@@ -197,7 +227,6 @@ struct ProfileView: View {
                                         .scaledToFit()
                                         .frame(width: 14, height: 14)
                                         .foregroundStyle(.c0A0A0A)
-                                    
                                 }
                         }
                         .padding(.bottom, 11)
@@ -207,101 +236,100 @@ struct ProfileView: View {
             
             
             
-            MainTextField(placeholder: R.string.localizable.firstName(), text: $viewModel.firstname, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.firstName(), text: $viewModel.firstname)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .firstName)
             
-            MainTextField(placeholder: R.string.localizable.lastName(), text: $viewModel.lastname, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.lastName(), text: $viewModel.lastname)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .firstName)
             
-            MainTextField(placeholder: R.string.localizable.jobTitle(), text: $viewModel.jobTitle, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.jobTitle(), text: $viewModel.jobTitle)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .jobTitle)
             
-            MainTextField(placeholder: R.string.localizable.summary(), text: $viewModel.summary, isKeyboadVisible: $isKeyboardVisible)
-            
-            
+            MainTextField(placeholder: R.string.localizable.summary(), text: $viewModel.summary)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .summary)
         }
-        
-        
     }
     
     @ViewBuilder private func contactView() -> some View {
         VStack {
-            MainTextField(placeholder: R.string.localizable.mail(), text: $viewModel.email, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.mail(), text: $viewModel.email)
+                .onSubmit(focusNextField)
+                .keyboardType(.emailAddress)
+                .focused($isKeyboardVisible, equals: .email)
             
-            MainTextField(placeholder: R.string.localizable.phoneNumber(), text: $viewModel.phone, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.phoneNumber(), text: $viewModel.phone)
+                .onSubmit(focusNextField)
+                .keyboardType(.phonePad)
+                .focused($isKeyboardVisible, equals: .email)
             
-            MainTextField(placeholder: R.string.localizable.site(), text: $viewModel.site, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.site(), text: $viewModel.site)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .site)
             
-            MainTextField(placeholder: R.string.localizable.location(), text: $viewModel.location, isKeyboadVisible: $isKeyboardVisible)
+            MainTextField(placeholder: R.string.localizable.location(), text: $viewModel.location)
+                .onSubmit(focusNextField)
+                .focused($isKeyboardVisible, equals: .location)
+            
         }
         .transition(.move(edge: .trailing))
     }
     
     @ViewBuilder private func workExperinceView() -> some View {
-        // MARK: Work Experience Section
-//        VStack {
-//            HStack {
-//                Text(R.string.localizable.addWork)
-//                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
-//                Spacer()
-//                if viewModel.workExperiences.count < viewModel.maxWorkExperience {
-//                    Button {
-//                        viewModel.showWorkSheet = true
-//                    } label: {
-//                        Image(.plus)
-//                            .resizable()
-//                            .scaledToFit()
-//                            .frame(width: 14, height: 14)
-//                    }
-//                    .buttonStyle(CircularButton(opacity: 0.6))
-//                }
-//            }
-//            
-//            ForEach($viewModel.workExperiences) { $work in
-//                VStack(alignment: .leading, spacing: 8) {
-//                    TextField("Speciality", text: $work.speciality)
-//                        .textFieldStyle(RoundedBorderTextFieldStyle())
-//                    TextField("Company Name", text: $work.companyName)
-//                        .textFieldStyle(RoundedBorderTextFieldStyle())
-//                    TextField("Country", text: $work.country)
-//                        .textFieldStyle(RoundedBorderTextFieldStyle())
-//                    DatePicker("Start Date", selection: $work.workStartedDate, displayedComponents: .date)
-//                    DatePicker("End Date", selection: $work.workEndedDate, displayedComponents: .date)
-//                        .background(.clear)
-//                    
-//                    SmallWorkView(duties: $work.duties)
-//                }
-//                .padding()
-//                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-//            }
-//        }
-//        .transition(.move(edge: .trailing))
+        VStack {
+            HStack {
+                Text(R.string.localizable.addWork)
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                
+                Spacer()
+                
+                if viewModel.workExperiences.count < viewModel.maxWorkExperience {
+                    Button {
+                        viewModel.showWorkSheet = true
+                    } label: {
+                        Image(.plus)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 14, height: 14)
+                    }
+                    .buttonStyle(CircularButton(opacity: 0.6))
+                }
+            }
+            
+            ForEach($viewModel.workExperiences, id: \.id) { $work in
+                SmallWorkView(work: $work, workExperiences: $viewModel.workExperiences, showWorkSheet: $viewModel.showWorkSheet)
+            }
+            .padding(.top, 20)
+        }
+        .transition(.move(edge: .trailing))
     }
     
     @ViewBuilder private func studyView() -> some View {
+
         VStack {
             HStack {
-                Text("Education")
-                    .font(.headline)
+                Text(R.string.localizable.addEducation())
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                
                 Spacer()
+                
                 if viewModel.educationExperiences.count < viewModel.maxEducation {
                     Button {
-                        viewModel.educationExperiences.append(EducationInput())
+                        viewModel.showEducationSheet = true
                     } label: {
-                        Image(systemName: "plus.circle")
-                            .font(.title2)
+                        Image(.plus)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 14, height: 14)
                     }
+                    .buttonStyle(CircularButton(opacity: 0.6))
                 }
             }
-            ForEach($viewModel.educationExperiences) { $edu in
-                VStack(alignment: .leading, spacing: 8) {
-                    TextField("Education Name", text: $edu.education)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    TextField("Description", text: $edu.description)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    DatePicker("Start Date", selection: $edu.startedDate, displayedComponents: .date)
-                    DatePicker("End Date", selection: $edu.endedDate, displayedComponents: .date)
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
-            }
+            
+            
         }
         .transition(.move(edge: .trailing))
     }
@@ -309,9 +337,11 @@ struct ProfileView: View {
     @ViewBuilder private func skillsView() -> some View {
         VStack {
             HStack {
-                Text("Skills")
-                    .font(.headline)
+                Text(R.string.localizable.skills())
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                
                 Spacer()
+                
                 if viewModel.skills.count < viewModel.maxSkills {
                     Button {
                         viewModel.skills.append(SkillInput())
@@ -321,6 +351,7 @@ struct ProfileView: View {
                     }
                 }
             }
+            
             ForEach($viewModel.skills) { $skill in
                 VStack(alignment: .leading, spacing: 8) {
                     TextField("Skill Type", text: $skill.type)
@@ -334,80 +365,451 @@ struct ProfileView: View {
         }
         .transition(.move(edge: .trailing))
     }
+    
+    private func focusNextField() {
+        switch isKeyboardVisible {
+        case .firstName:
+            isKeyboardVisible = .lastName
+        case .lastName:
+            isKeyboardVisible = .jobTitle
+        case .email:
+            isKeyboardVisible = .phone
+        case .jobTitle:
+            isKeyboardVisible = .summary
+        case .summary:
+            isKeyboardVisible = nil
+        case .phone:
+            isKeyboardVisible = .site
+        case .site:
+            isKeyboardVisible = .location
+        case .location:
+            isKeyboardVisible = .jobDescription
+        case .companyName:
+            isKeyboardVisible = .position
+        case .position:
+            isKeyboardVisible = .location
+        case .country:
+            isKeyboardVisible = .country
+        case .jobDescription:
+            isKeyboardVisible = nil
+        case .universityName:
+            isKeyboardVisible = .degree
+        case .degree:
+            isKeyboardVisible = nil
+        case nil:
+            break
+        }
+    }
+      
 }
 
 #Preview {
     ProfileView(viewModel: .init(coordinator: .init()))
 }
 
-struct DutiesInputView: View {
-    @Binding var duties: [String]
+struct WorkInputView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var work: WorkExperienceInput
+    @State var formattedDate: String = ""
+    @State var formattedEndDate: String = ""
+    @State var mockPlaceholder: String = ""
+
+    @FocusState private var isKeyboardVisible: FocusableField?
     var onSave: () -> Void
+    
+    var couldSave: Bool {
+        return !work.companyName.isEmpty && !work.country.isEmpty && !work.jobDescirption.isEmpty && !work.speciality.isEmpty
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(duties.indices, id: \.self) { index in
-                HStack {
-                    TextField("Duty \(index + 1)", text: $duties[index])
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    if duties.count > 1 {
-                        Button(action: {
-                            duties.remove(at: index)
-                        }) {
-                            Image(systemName: "minus.circle")
-                        }
-                    }
-                }
+            Button {
+                dismiss()
+            } label: {
+                Image(.cross)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 10)
             }
+            .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+            .padding(.top, 20)
             
-            if duties.count < 4 {
-                Button(action: {
-                    duties.append("")
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle")
-                        Text("Add Duty")
+            ScrollView(showsIndicators: false) {
+                MainTextField(placeholder: R.string.localizable.companyName(), text: $work.companyName, color: .c686868 )
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .companyName)
+                
+                MainTextField(placeholder: R.string.localizable.position(), text: $work.speciality, color: .c686868)
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .position)
+                
+                MainTextField(placeholder: R.string.localizable.location(), text: $work.country, color: .c686868)
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .country)
+                
+                
+                MainTextField(placeholder: R.string.localizable.startOfEmployment(), text: $formattedDate, color: .c686868)
+                
+                    .disabled(true)
+                    .overlay {
+                        DatePicker("", selection: $work.workStartedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
+                            .scaleEffect(4.0)
+                            .colorMultiply(.clear)
+                            .onChange(of: work.workStartedDate) { newDate in
+                                formattedDate = newDate.monthYearString
+                            }
+                            .clipped()
                     }
-                }
-            } else {
-                Text("Maximum 10 duties reached")
-                    .foregroundColor(.red)
+                    .contentShape(Rectangle())
+                
+                MainTextField(placeholder: R.string.localizable.endOfEmployment(), text: $formattedEndDate, color: .c686868)
+                    .disabled(true)
+                    .overlay {
+                        DatePicker("", selection: $work.workEndedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
+                            .scaleEffect(4.0)
+                            .colorMultiply(.clear)
+                            .onChange(of: work.workEndedDate) { newDate in
+                                formattedEndDate = newDate.monthYearString
+                            }
+                            .onChange(of: work.stillWorkingHere) {  newValue in
+                                if newValue {
+                                    formattedEndDate = Date().monthYearString
+                                }
+                            }
+                        
+                    }
+                    .clipped()
+                    .contentShape(Rectangle())
+                
+                MainTextField(placeholder: R.string.localizable.stillWorkingHere(), text: $mockPlaceholder, color: .c686868)
+                    .disabled(true)
+                    .overlay {
+                        Toggle(isOn: $work.stillWorkingHere) {
+                            
+                        }
+                        .toggleStyle(CustomColorToggleStyle())
+                        .padding(.trailing, 30)
+                    }
+                
+                MainTextEditor(placeholder: R.string.localizable.jobDescription(), text: $work.jobDescirption, color: .c686868)
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .jobDescription)
+                
+                
+                Spacer(minLength: 50)
             }
+            .padding(.top, 10)
             
             Button {
                 onSave()
             } label: {
                 Text(R.string.localizable.save())
-                
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: 60)
+            .background(couldSave ? .cE1FF41 : .c686868)
+            .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+            .disabled(!couldSave)
+            .clipShape(RoundedRectangle(cornerRadius: 32))
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.horizontal, 16)
+        .background(.c393939)
+    }
+    
+    private func focusNextField() {
+        switch isKeyboardVisible {
+        case .firstName:
+            isKeyboardVisible = .lastName
+        case .lastName:
+            isKeyboardVisible = .jobTitle
+        case .email:
+            isKeyboardVisible = .phone
+        case .jobTitle:
+            isKeyboardVisible = .summary
+        case .summary:
+            isKeyboardVisible = nil
+        case .phone:
+            isKeyboardVisible = .site
+        case .site:
+            isKeyboardVisible = .location
+        case .location:
+            isKeyboardVisible = nil
+        case .companyName:
+            isKeyboardVisible = .position
+        case .position:
+            isKeyboardVisible = .location
+        case .country:
+            isKeyboardVisible = .country
+        case .jobDescription:
+            isKeyboardVisible = nil
+        case .universityName:
+            isKeyboardVisible = .degree
+        case .degree:
+            isKeyboardVisible = nil
+        case nil:
+            break
+        }
+    }
+}
+
+
+struct EducationInputView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var edu: EducationInput
+    @State var formattedStartedDate: String = ""
+    @State var formattedEndDate: String = ""
+    @State var mockPlaceholder: String = ""
+    @FocusState var isKeyboardVisible: FocusableField?
+    
+    var onSave: () -> Void
+    
+    
+    var couldSave: Bool {
+        return !edu.education.isEmpty && !edu.degree.isEmpty
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                dismiss()
+            } label: {
+                Image(.cross)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 10)
+            }
+            .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+            .padding(.top, 20)
+            
+            ScrollView(showsIndicators: false) {
+                
+                MainTextField(placeholder: R.string.localizable.universityName(), text: $edu.education,  color: .c686868)
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .universityName)
+                
+                MainTextField(placeholder: R.string.localizable.degree(), text: $edu.degree,  color: .c686868)
+                    .onSubmit(focusNextField)
+                    .focused($isKeyboardVisible, equals: .degree)
+                
+                
+                MainTextField(placeholder: R.string.localizable.endOfEmployment(), text: $formattedStartedDate, color: .c686868)
+                    .disabled(true)
+                    .overlay {
+                        DatePicker("", selection: $edu.startedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
+                            .scaleEffect(4.0)
+                            .colorMultiply(.clear)
+                            .onChange(of: edu.startedDate) { newDate in
+                                formattedEndDate = newDate.monthYearString
+                            }
+                    }
+                    .clipped()
+                    .contentShape(Rectangle())
+                
+                
+                MainTextField(placeholder: R.string.localizable.endOfEmployment(), text: $formattedEndDate, color: .c686868)
+                    .disabled(true)
+                    .overlay {
+                        DatePicker("", selection: $edu.endedDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
+                            .scaleEffect(4.0)
+                            .colorMultiply(.clear)
+                            .onChange(of: edu.endedDate) { newDate in
+                                formattedEndDate = newDate.monthYearString
+                            }
+                            .onChange(of: edu.stillStudyingHere) {  newValue in
+                                if newValue {
+                                    formattedEndDate = Date().monthYearString
+                                }
+                            }
+                        
+                    }
+                    .clipped()
+                    .contentShape(Rectangle())
+                
+                MainTextField(placeholder: R.string.localizable.stillStudyingHere(), text: $formattedEndDate, color: .c686868)
+                    .disabled(true)
+                    .overlay {
+                        Toggle(isOn: $edu.stillStudyingHere) { }
+                        .toggleStyle(CustomColorToggleStyle())
+                        .padding(.trailing, 30)
+                    }
+                
+                
+                Spacer(minLength: 50)
+            }
+            .padding(.top, 10)
+            
+            Button {
+                onSave()
+            } label: {
+                Text(R.string.localizable.save())
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 60)
+            .background(couldSave ? .cE1FF41 : .c686868)
+            .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+            .disabled(!couldSave)
+            .clipShape(RoundedRectangle(cornerRadius: 32))
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.horizontal, 16)
+        .background(.c393939)
+    }
+    
+    private func focusNextField() {
+        switch isKeyboardVisible {
+        case .firstName:
+            isKeyboardVisible = .lastName
+        case .lastName:
+            isKeyboardVisible = .jobTitle
+        case .email:
+            isKeyboardVisible = .phone
+        case .jobTitle:
+            isKeyboardVisible = .summary
+        case .summary:
+            isKeyboardVisible = nil
+        case .phone:
+            isKeyboardVisible = .site
+        case .site:
+            isKeyboardVisible = .location
+        case .location:
+            isKeyboardVisible = nil
+        case .companyName:
+            isKeyboardVisible = .position
+        case .position:
+            isKeyboardVisible = .location
+        case .country:
+            isKeyboardVisible = .country
+        case .jobDescription:
+            isKeyboardVisible = nil
+        case .universityName:
+            isKeyboardVisible = .degree
+        case .degree:
+            isKeyboardVisible = nil
+        case nil:
+            break
         }
     }
 }
 
 
 struct SmallWorkView: View {
-    @Binding var duties: [String]
+    @Binding var work: WorkExperienceInput
+    @Binding var workExperiences: [WorkExperienceInput]
+    @Binding var showWorkSheet: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(duties.indices, id: \.self) { index in
-                HStack {
-                    TextField("Duty \(index + 1)", text: $duties[index])
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    if duties.count > 1 {
-                        Button(action: {
-                            duties.remove(at: index)
-                        }) {
-                            Image(systemName: "minus.circle")
-                        }
-                    }
-                }
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(work.companyName)
+                    .lineLimit(1)
+                    .foregroundStyle(.white)
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 16)!))
+                
+                Text(work.speciality)
+                    .lineLimit(1)
+                    .foregroundStyle(.cA1A1A1)
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 16)!))
+                
             }
+            .padding(.leading, 32)
             
-        
+            Spacer()
+            
+            HStack(spacing: 6) {
+                Button {
+                    
+                } label: {
+                    Image(.edit)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
+                
+                Button {
+                    
+                } label: {
+                    Image(.trash)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
+            }
+            .padding(.trailing, 3)
+            
         }
+        .padding(2)
+        .frame(height: 72)
+        .background(.c393939)
+        .clipShape(RoundedRectangle(cornerRadius: 40))
+    }
+}
+
+
+
+struct SmallStudyView: View {
+    @Binding var study: EducationInput
+    @Binding var educationHistory: [EducationInput]
+    @Binding var showWorkSheet: Bool
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(study.education)
+                    .lineLimit(1)
+                    .foregroundStyle(.white)
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 16)!))
+                
+                Text(study.startedDate.monthYearString + " - " + study.endedDate.monthYearString)
+                    .lineLimit(1)
+                    .foregroundStyle(.cA1A1A1)
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 16)!))
+                
+            }
+            .padding(.leading, 32)
+            
+            Spacer()
+            
+            HStack(spacing: 6) {
+                Button {
+                    
+                } label: {
+                    Image(.edit)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
+                
+                Button {
+                    
+                } label: {
+                    Image(.trash)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
+            }
+            .padding(.trailing, 3)
+            
+        }
+        .padding(2)
+        .frame(height: 72)
+        .background(.c393939)
+        .clipShape(RoundedRectangle(cornerRadius: 40))
     }
 }
 

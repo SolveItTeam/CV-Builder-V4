@@ -33,7 +33,7 @@ struct CVConstructor {
     let skills: [Skills]
 }
 
-struct WorkExperienceInput: Identifiable {
+struct WorkExperienceInput: Identifiable, Hashable {
     var id = UUID()
     var workStartedDate: Date = Date()
     var workEndedDate: Date = Date()
@@ -41,14 +41,18 @@ struct WorkExperienceInput: Identifiable {
     var companyName: String = ""
     var country: String = ""
     var duties: [String] = []
+    var stillWorkingHere: Bool = false
+    var jobDescirption: String = ""
 }
 
 struct EducationInput: Identifiable {
     var id = UUID()
     var startedDate: Date = Date()
     var endedDate: Date = Date()
+    var degree: String = ""
     var education: String = ""
     var description: String = ""
+    var stillStudyingHere: Bool = false
 }
 
 struct SkillInput: Identifiable {

@@ -2,7 +2,7 @@ import SwiftUI
 
 
 final class ProfileViewModel: ObservableObject {
-    @Published var profileData: ProfileDataType = .profile 
+    @Published var profileData: ProfileDataType = .education
     @Published var firstname: String = ""
     @Published var lastname: String = ""
     @Published var email: String = ""
@@ -12,6 +12,9 @@ final class ProfileViewModel: ObservableObject {
     @Published var site: String = ""
     @Published var location: String = ""
     @Published var showWorkSheet: Bool = false
+    @Published var showEducationSheet: Bool = false
+    @Published var showSkillsSheet: Bool = false
+    
     // MARK: - Dynamic Section States
     @Published var workExperiences: [WorkExperienceInput] = []
     @Published var educationExperiences: [EducationInput] = []
@@ -19,7 +22,23 @@ final class ProfileViewModel: ObservableObject {
     @Published var previewImage: Image = Image(systemName: "doc")
     @Published var filename: String = "myCV"
     @Published var selectedWorkIndex: Int? = nil
-    @Published var newDuties: [String] = [""]
+    @Published var newWorkExperience: WorkExperienceInput = WorkExperienceInput()
+    @Published var newEducationExperience: EducationInput = EducationInput()
+    
+    var couldGoNext: Bool {
+        switch profileData {
+        case .profile:
+            return !(firstname.isEmpty && lastname.isEmpty && jobTitle.isEmpty && summary.isEmpty)
+        case .contact:
+            return !(email.isEmpty && phone.isEmpty && site.isEmpty && location.isEmpty)
+        case .workExperience:
+            return !workExperiences.isEmpty
+        case .education:
+            return !educationExperiences.isEmpty
+        case .skills:
+            return !skills.isEmpty
+        }
+    }
     
     let maxWorkExperience = 4
     let maxEducation = 2
@@ -33,5 +52,9 @@ final class ProfileViewModel: ObservableObject {
     
     init(coordinator: Coordinator) {
         self.coordinator = coordinator
+    }
+    
+    func popView() {
+        coordinator.popView()
     }
 }

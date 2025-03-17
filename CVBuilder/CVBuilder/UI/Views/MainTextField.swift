@@ -3,26 +3,73 @@ import SwiftUI
 struct MainTextField: View {
     let placeholder: String
     @Binding var text: String
-    @FocusState.Binding var isKeyboadVisible: Bool
+    let color: Color
+    
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939) {
+        self.placeholder = placeholder
+        self.color = color
+        _text = text
+    }
     
     var body: some View {
         TextField("", text: $text, prompt: Text(placeholder)
             .foregroundColor(.cA1A1A1))
         .padding(.horizontal, 24)
         .padding(.vertical, 26)
-        .focused($isKeyboadVisible)
-        .autocapitalization(.sentences)
         .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
         .textFieldStyle(.plain)
         .multilineTextAlignment(.leading)
         .foregroundStyle(.white)
         .lineLimit(1)
-        .submitLabel(.return)
-        .background(.c393939)
+        .submitLabel(.next)
+        .background(color)
         .clipShape(RoundedRectangle(cornerRadius: 40))
         .onChange(of: text) { newValue in
             if newValue.count > 100 {
                 text = String(newValue.prefix(100))
+            }
+        }
+    }
+}
+
+struct MainTextEditor: View {
+    let placeholder: String
+    @Binding var text: String
+    let color: Color
+    
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939) {
+        self.placeholder = placeholder
+        self.color = color
+        _text = text
+    }
+    
+    var body: some View {
+        TextEditor( text: $text)
+        .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .autocapitalization(.sentences)
+        .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+        .textFieldStyle(.plain)
+        .multilineTextAlignment(.leading)
+        .foregroundStyle(.white)
+        .submitLabel(.return)
+        .background(color)
+        .frame(height: 196)
+        .overlay(alignment: .topLeading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                    .foregroundStyle(.cA1A1A1)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 18)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 48))
+        .onChange(of: text) { newValue in
+            if newValue.count > 300 {
+                text = String(newValue.prefix(300))
             }
         }
     }
