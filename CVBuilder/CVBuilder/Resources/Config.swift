@@ -6,7 +6,6 @@ struct Config: Decodable {
     let terms: String
     let email: String
     let adapty: String
-    let logoApi: String
 }
 
 struct ConfigValues {

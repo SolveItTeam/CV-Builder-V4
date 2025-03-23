@@ -1,35 +1,35 @@
 import Foundation
 
 enum SettingsItem: CaseIterable {
-    case rateUs, shareApp, restore, privacyPolicy, termsOfUse
+    case rateUs, shareApp, contactUs, privacyPolicy, termsOfUse
     
     var icon: ImageResource {
         switch self {
         case .rateUs:
-            return .woman
+            return .rateUs
         case .shareApp:
-            return .woman
-        case .restore:
-            return .woman
+            return .shareapp
+        case .contactUs:
+            return .contactUs
         case .privacyPolicy:
-            return .woman
+            return .privacy
         case .termsOfUse:
-            return .woman
+            return .terms
         }
     }
     
-    var title: LocalizedStringResource {
+    var title: String {
         switch self {
         case .shareApp:
-            return ""
-        case .restore:
-            return ""
+            return R.string.localizable.shareApp()
+        case .contactUs:
+            return R.string.localizable.contactUs()
         case .rateUs:
-            return ""
+            return R.string.localizable.rateUs()
         case .privacyPolicy:
-            return ""
+            return R.string.localizable.privacyPolicy()
         case .termsOfUse:
-            return ""
+            return R.string.localizable.termsOfUse()
         }
     }
 }

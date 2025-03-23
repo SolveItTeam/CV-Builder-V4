@@ -3,10 +3,14 @@ import SwiftUI
 struct MainTextField: View {
     let placeholder: String
     @Binding var text: String
+    @FocusState.Binding var isFocused: FocusableField?
+    let type: FocusableField?
     let color: Color
     
-    init(placeholder: String, text: Binding<String>, color: Color = .c393939) {
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939, isFocused: FocusState<FocusableField?>.Binding, type: FocusableField?) {
         self.placeholder = placeholder
+        _isFocused = isFocused
+        self.type = type
         self.color = color
         _text = text
     }
@@ -21,12 +25,18 @@ struct MainTextField: View {
         .multilineTextAlignment(.leading)
         .foregroundStyle(.white)
         .lineLimit(1)
-        .submitLabel(.next)
+        .submitLabel(.return)
         .background(color)
         .clipShape(RoundedRectangle(cornerRadius: 40))
         .onChange(of: text) { newValue in
             if newValue.count > 100 {
                 text = String(newValue.prefix(100))
+            }
+        }
+        .overlay {
+            if type == isFocused && type != nil {
+                RoundedRectangle(cornerRadius: 40)
+                    .stroke(.cE1FF41, lineWidth: 1)
             }
         }
     }
@@ -36,9 +46,12 @@ struct MainTextEditor: View {
     let placeholder: String
     @Binding var text: String
     let color: Color
-    
-    init(placeholder: String, text: Binding<String>, color: Color = .c393939) {
+    @FocusState.Binding var isFocused: FocusableField?
+    let type: FocusableField?
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939, isFocused: FocusState<FocusableField?>.Binding, type: FocusableField?) {
         self.placeholder = placeholder
+        _isFocused = isFocused
+        self.type = type
         self.color = color
         _text = text
     }
@@ -70,6 +83,12 @@ struct MainTextEditor: View {
         .onChange(of: text) { newValue in
             if newValue.count > 300 {
                 text = String(newValue.prefix(300))
+            }
+        }
+        .overlay {
+            if type == isFocused {
+                RoundedRectangle(cornerRadius: 48)
+                    .stroke(.cE1FF41, lineWidth: 1)
             }
         }
     }

@@ -4,7 +4,7 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     var body: some View {
         VStack {
-            NavBar {
+            NavBar(showProIcon: $viewModel.showProIcon) {
                 viewModel.showPaywall()
             }
             
