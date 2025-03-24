@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum FocusableField: Hashable {
-    case firstName, lastName, email, jobTitle, summary, phone, site, location, companyName, position, country, jobDescription, universityName, degree
+    case firstName, lastName, email, jobTitle, summary, phone, site, location, companyName, position, country, jobDescription, universityName, degree, skills, languages
     
 }
 
@@ -192,6 +192,38 @@ struct ProfileView: View {
                 }
             }
         }
+        .sheet(isPresented: $viewModel.showSkillsSheet) {
+            SkillsInputView(skills: $viewModel.skills, maxSkillsCount: viewModel.maxSkills) {
+                viewModel.showSkillsSheet = false
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showLanguagesSheet) {
+            LanguagesInputView(languages: $viewModel.languages, maxLanguagesCount: viewModel.maxLanguages) {
+                viewModel.showLanguagesSheet = false
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+        }
     }
     
     @ViewBuilder private func profileInfoView() -> some View {
@@ -298,7 +330,7 @@ struct ProfileView: View {
     }
     
     @ViewBuilder private func workExperinceView() -> some View {
-        VStack {
+        VStack(spacing: 6) {
             HStack {
                 Text(R.string.localizable.addWork)
                     .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
@@ -321,14 +353,13 @@ struct ProfileView: View {
             ForEach($viewModel.workExperiences, id: \.id) { $work in
                 SmallWorkView(work: $work, workExperiences: $viewModel.workExperiences, showWorkSheet: $viewModel.showWorkSheet)
             }
-            .padding(.top, 20)
         }
         .transition(.move(edge: .trailing))
     }
     
     @ViewBuilder private func studyView() -> some View {
         
-        VStack {
+        VStack(spacing: 6) {
             HStack {
                 Text(R.string.localizable.addEducation())
                     .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
@@ -348,6 +379,10 @@ struct ProfileView: View {
                 }
             }
             
+            ForEach($viewModel.educationExperiences, id: \.id) { $education in
+                SmallStudyView(study: $education, educationHistory: $viewModel.educationExperiences, showWorkSheet: $viewModel.showEducationSheet)
+            }
+            
             
         }
         .transition(.move(edge: .trailing))
@@ -356,30 +391,76 @@ struct ProfileView: View {
     @ViewBuilder private func skillsView() -> some View {
         VStack {
             HStack {
-                Text(R.string.localizable.skills())
+                Text(R.string.localizable.addSkills())
                     .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
                 
                 Spacer()
                 
                 if viewModel.skills.count < viewModel.maxSkills {
-                    Button {
-                        viewModel.skills.append(SkillInput())
-                    } label: {
-                        Image(systemName: "plus.circle")
-                            .font(.title2)
+                        Button {
+                            viewModel.showSkillsSheet = true
+                        } label: {
+                            Image(.plus)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14, height: 14)
+                        }
+                        .buttonStyle(CircularButton(opacity: 0.6))
                     }
+                
+            }
+             
+            ForEach(viewModel.skills.chunked(into: 2), id: \.self) { pair in
+                HStack(spacing: 8) {
+                    ForEach(pair) { skill in
+                        HStack(spacing: 3) {
+                            Text(skill.description)
+                                .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                            
+                            Button {
+                                if let index = viewModel.skills.firstIndex(where: { $0.description == skill.description } ) {
+                                    viewModel.skills.remove(at: index)
+                                }
+                            } label: {
+                                Image(.crossWithFrame)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 24, height: 24)
+                            }
+                            
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(.c686868)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                    }
+                    
+                    Spacer()
+                    
                 }
             }
             
-            ForEach($viewModel.skills) { $skill in
-                VStack(alignment: .leading, spacing: 8) {
-                    TextField("Skill Type", text: $skill.type)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    TextField("Description", text: $skill.description)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
+            HStack {
+                Text(R.string.localizable.addLanguages())
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                
+                Spacer()
+                
+                if viewModel.languages.count < viewModel.maxLanguages {
+                        Button {
+                            viewModel.showLanguagesSheet = true
+                        } label: {
+                            Image(.plus)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14, height: 14)
+                        }
+                        .buttonStyle(CircularButton(opacity: 0.6))
+                    }
+                
             }
         }
         .transition(.move(edge: .trailing))
@@ -496,13 +577,16 @@ struct WorkInputView: View {
             } label: {
                 Text(R.string.localizable.save())
                     .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(couldSave ? .cE1FF41 : .c686868)
+                    .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+                
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(couldSave ? .cE1FF41 : .c686868)
-            .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+
             .disabled(!couldSave)
-            .clipShape(RoundedRectangle(cornerRadius: 32))
             .buttonStyle(ScaleButtonStyle())
         }
         .padding(.horizontal, 16)
@@ -550,7 +634,7 @@ struct EducationInputView: View {
                         .focused($isKeyboardVisible, equals: .degree)
                     
                     
-                    MainTextField(placeholder: R.string.localizable.endOfEmployment(), text: $formattedStartedDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
+                    MainTextField(placeholder: R.string.localizable.startOfEmployment(), text: $formattedStartedDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
                         .disabled(true)
                         .overlay {
                             DatePicker("", selection: $edu.startedDate, displayedComponents: .date)
@@ -559,7 +643,7 @@ struct EducationInputView: View {
                                 .scaleEffect(4.0)
                                 .colorMultiply(.clear)
                                 .onChange(of: edu.startedDate) { newDate in
-                                    formattedEndDate = newDate.monthYearString
+                                    formattedStartedDate = newDate.monthYearString
                                 }
                         }
                         .clipped()
@@ -587,7 +671,7 @@ struct EducationInputView: View {
                         .clipped()
                         .contentShape(Rectangle())
                     
-                    MainTextField(placeholder: R.string.localizable.stillStudyingHere(), text: $formattedEndDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
+                    MainTextField(placeholder: R.string.localizable.stillStudyingHere(), text: $mockPlaceholder, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
                         .disabled(true)
                         .overlay {
                             Toggle(isOn: $edu.stillStudyingHere) { }
@@ -608,21 +692,223 @@ struct EducationInputView: View {
             } label: {
                 Text(R.string.localizable.save())
                     .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(couldSave ? .cE1FF41 : .c686868)
+                    .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+                
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(couldSave ? .cE1FF41 : .c686868)
-            .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+
             .disabled(!couldSave)
-            .clipShape(RoundedRectangle(cornerRadius: 32))
             .buttonStyle(ScaleButtonStyle())
         }
         .padding(.horizontal, 16)
         .background(.c393939)
     }
-    
 }
 
+struct SkillsInputView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var skills: [SkillInput]
+    @FocusState var isKeyboardVisible: FocusableField?
+    @State var input: String =  ""
+    let maxSkillsCount: Int
+    var onSave: () -> Void
+
+    var couldSave: Bool {
+        return !skills.isEmpty
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                dismiss()
+            } label: {
+                Image(.cross)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 10)
+            }
+            .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+            .padding(.top, 20)
+            
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading) {
+                    MainTextFieldWithAction(placeholder: R.string.localizable.addSkills(), text: $input,  color: .c686868, isFocused: $isKeyboardVisible, type: .universityName) {
+                        skills.append(SkillInput(description: input))
+                        input.removeAll()
+                    }
+                    .id(FocusableField.universityName)
+                    .focused($isKeyboardVisible, equals: .skills)
+                    .disabled(skills.count == maxSkillsCount)
+                    .opacity(skills.count == maxSkillsCount ? 0.4 : 1)
+                    
+                    ForEach(skills.chunked(into: 2), id: \.self) { pair in
+                        HStack(spacing: 8) {
+                            ForEach(pair) { skill in
+                                HStack(spacing: 3) {
+                                    Text(skill.description)
+                                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                                        .foregroundStyle(.white)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                    
+                                    Button {
+                                        if let index = skills.firstIndex(where: { $0.description == skill.description } ) {
+                                            skills.remove(at: index)
+                                        }
+                                    } label: {
+                                        Image(.crossWithFrame)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 24, height: 24)
+                                    }
+                                    
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(.c686868)
+                                .clipShape(RoundedRectangle(cornerRadius: 32))
+                            }
+                            
+                            Spacer()
+
+                        }
+
+                    }
+                }
+                .padding(.top, 2)
+                
+                Spacer(minLength: 50)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .padding(.top, 10)
+            .padding(.horizontal, 2)
+            
+            Button {
+                onSave()
+            } label: {
+                Text(R.string.localizable.save())
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(couldSave ? .cE1FF41 : .c686868)
+                    .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+                
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .contentShape(Rectangle())
+            }
+
+            .disabled(!couldSave)
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.horizontal, 16)
+        .background(.c393939)
+    }
+}
+
+
+struct LanguagesInputView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var languages: [Language]
+    @FocusState var isKeyboardVisible: FocusableField?
+    @State var input: String =  ""
+    let maxLanguagesCount: Int
+    var onSave: () -> Void
+    
+    
+    var couldSave: Bool {
+        return !languages.isEmpty
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                dismiss()
+            } label: {
+                Image(.cross)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 10)
+            }
+            .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+            .padding(.top, 20)
+            
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    MainTextFieldWithAction(placeholder: R.string.localizable.addLanguages(), text: $input,  color: .c686868, isFocused: $isKeyboardVisible, type: .universityName) {
+                        languages.append(Language(name: input))
+                        input.removeAll()
+                    }
+                        .id(FocusableField.universityName)
+                        .focused($isKeyboardVisible, equals: .skills)
+                        .disabled(languages.count == maxLanguagesCount)
+                        .opacity(languages.count == maxLanguagesCount ? 0.4 : 1)
+                        
+                    ForEach(languages.chunked(into: 2), id: \.self) { pair in
+                        HStack(spacing: 8) {
+                            ForEach(pair) { language in
+                                HStack(spacing: 3) {
+                                    Text(language.name)
+                                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                                        .foregroundStyle(.white)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                    
+                                    Button {
+                                        if let index = languages.firstIndex(where: { $0.name == language.name } ) {
+                                            languages.remove(at: index)
+                                        }
+                                    } label: {
+                                        Image(.crossWithFrame)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 24, height: 24)
+                                    }
+                                    
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(.c686868)
+                                .clipShape(RoundedRectangle(cornerRadius: 32))
+                            }
+                            
+                            Spacer()
+
+                        }
+                    }
+                }
+                .padding(.top, 2)
+                
+                Spacer(minLength: 50)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .padding(.top, 10)
+            .padding(.horizontal, 2)
+            
+            Button {
+                onSave()
+            } label: {
+                Text(R.string.localizable.save())
+                    .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(couldSave ? .cE1FF41 : .c686868)
+                    .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
+                
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .contentShape(Rectangle())
+            }
+
+            .disabled(!couldSave)
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.horizontal, 16)
+        .background(.c393939)
+    }
+}
 
 struct SmallWorkView: View {
     @Binding var work: WorkExperienceInput

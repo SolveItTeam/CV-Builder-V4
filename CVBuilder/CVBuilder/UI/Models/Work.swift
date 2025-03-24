@@ -55,8 +55,12 @@ struct EducationInput: Identifiable {
     var stillStudyingHere: Bool = false
 }
 
-struct SkillInput: Identifiable {
-    var id = UUID()
-    var type: String = ""
+struct SkillInput: Identifiable, Hashable {
+    var id = UUID() 
     var description: String = ""
+}
+
+struct Language: Identifiable, Hashable {
+    var id = UUID()
+    var name: String = ""
 }

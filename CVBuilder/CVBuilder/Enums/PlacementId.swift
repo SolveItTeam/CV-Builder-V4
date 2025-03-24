@@ -1,7 +1,7 @@
 import Foundation
 
 enum PlacementId: String {
-    case signature = "ar.draw"
+    case place = "cvbuilder.placement"
 }
 
 enum AccessLevel: String {

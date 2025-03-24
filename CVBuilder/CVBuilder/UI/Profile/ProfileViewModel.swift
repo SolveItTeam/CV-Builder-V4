@@ -2,7 +2,7 @@ import SwiftUI
 
 
 final class ProfileViewModel: ObservableObject {
-    @Published var profileData: ProfileDataType = .education
+    @Published var profileData: ProfileDataType = .skills
     @Published var firstname: String = ""
     @Published var lastname: String = ""
     @Published var email: String = ""
@@ -14,6 +14,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var showWorkSheet: Bool = false
     @Published var showEducationSheet: Bool = false
     @Published var showSkillsSheet: Bool = false
+    @Published var showLanguagesSheet: Bool = false
     
     // MARK: - Dynamic Section States
     @Published var workExperiences: [WorkExperienceInput] = []
@@ -24,7 +25,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var selectedWorkIndex: Int? = nil
     @Published var newWorkExperience: WorkExperienceInput = WorkExperienceInput()
     @Published var newEducationExperience: EducationInput = EducationInput()
-    
+    @Published var languages: [Language] = []
     var couldGoNext: Bool {
         switch profileData {
         case .profile:
@@ -42,7 +43,8 @@ final class ProfileViewModel: ObservableObject {
     
     let maxWorkExperience = 4
     let maxEducation = 2
-    let maxSkills = 3
+    let maxSkills = 20
+    let maxLanguages = 10
     @Published var selectedImage: UIImage? = nil
     @Published var showImagePicker: Bool = false
     

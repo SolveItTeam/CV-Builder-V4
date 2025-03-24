@@ -42,6 +42,70 @@ struct MainTextField: View {
     }
 }
 
+struct MainTextFieldWithAction: View {
+    let placeholder: String
+    @Binding var text: String
+    @FocusState.Binding var isFocused: FocusableField?
+    let type: FocusableField?
+    let color: Color
+    let action: () -> Void
+    
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939, isFocused: FocusState<FocusableField?>.Binding, type: FocusableField?, action: @escaping () -> Void) {
+        self.placeholder = placeholder
+        _isFocused = isFocused
+        self.type = type
+        self.color = color
+        _text = text
+        self.action = action
+    }
+    
+    var body: some View {
+        TextField("", text: $text, prompt: Text(placeholder)
+            .foregroundColor(.cA1A1A1))
+        .padding(.horizontal, 24)
+        .padding(.vertical, 26)
+        .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+        .textFieldStyle(.plain)
+        .multilineTextAlignment(.leading)
+        .foregroundStyle(.white)
+        .lineLimit(1)
+        .submitLabel(.return)
+        .background(color)
+        .clipShape(RoundedRectangle(cornerRadius: 40))
+        .onChange(of: text) { newValue in
+            if newValue.count > 100 {
+                text = String(newValue.prefix(100))
+            }
+        }
+        .overlay {
+            if type == isFocused && type != nil {
+                RoundedRectangle(cornerRadius: 40)
+                    .stroke(.cE1FF41, lineWidth: 1)
+            }
+        }
+        .overlay(alignment: .trailing) {
+            Button {
+                action()
+            } label: {
+                Circle()
+                    .fill(text.isEmpty ? .cA1A1A1 : .cE1FF41)
+                    .frame(width: 60, height: 60)
+                    .overlay {
+                        Image(.plus)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(text.isEmpty ? .c686868 : .blackMain)
+                            .frame(width: 12, height: 12)
+                    }
+                    .padding(.trailing, 4)
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+    }
+}
+
+
 struct MainTextEditor: View {
     let placeholder: String
     @Binding var text: String

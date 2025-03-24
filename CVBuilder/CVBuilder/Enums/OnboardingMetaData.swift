@@ -5,6 +5,7 @@ enum OnboardingMetaData: CaseIterable {
     case page2
     case page3
     case page4
+    case page5
     
     var image: ImageResource {
         switch self {
@@ -16,6 +17,8 @@ enum OnboardingMetaData: CaseIterable {
             return .woman
         case .page4:
             return .woman
+        case .page5:
+            return .woman
         }
     }
     
@@ -24,13 +27,15 @@ enum OnboardingMetaData: CaseIterable {
     var title: String {
         switch self {
         case .page1:
-            return ""
+            return R.string.localizable.createThePerfectResumeInMinutes()
         case .page2:
-            return ""
+            return R.string.localizable.supportOurGrowthRateUs()
         case .page3:
-            return ""
+            return R.string.localizable.createYourResumeFaster()
         case .page4:
-            return ""
+            return R.string.localizable.aSetOfDocumentsForWork()
+        case .page5:
+            return R.string.localizable.premiumIsYourWayToThePerfectResume()
         }
     }
     
@@ -39,14 +44,16 @@ enum OnboardingMetaData: CaseIterable {
     var subtitle: String {
         switch self {
         case .page1:
-            return ""
+            return R.string.localizable.createAResumeThatWorksForYouProfessionalLogicalAndStylish()
         case .page2:
-            return ""
+            return R.string.localizable.expressYourAppreciationByLeavingAReviewOnTheAppStore()
         case .page3:
-            return ""
+            return R.string.localizable.yourInformationIsSavedAndAutomaticallyTransferredToTheNewTemplate()
         case .page4:
-            return ""
+            return R.string.localizable.addACoverLetterAndGetACompleteSetForJobSearch()
         
+        case .page5:
+            return R.string.localizable.startToContinueAppWith3DaysTrialWeek("")
         }
     }
     
@@ -60,6 +67,8 @@ enum OnboardingMetaData: CaseIterable {
             return 2
         case .page4:
             return 3
+        case .page5:
+            return 4
         }
     }
 }
