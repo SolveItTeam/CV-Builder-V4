@@ -1,39 +1,48 @@
 import Foundation
 
-struct Work {
-    let workStartedDate: Date
-    let workEndedDate: Date
-    let speciality: String
-    let companyName: String
-    let country: String
-    let duties: [String]
+struct CreatedTemplate: Identifiable  {
+    let id: UUID = UUID()
+    var cvData: CVConstructor
+    var fileAbsolutePath: String
 }
 
-struct Education {
-    let startedDate: Date
-    let endedDate: Date
-    let education: String
-    let description: String
+struct Work: Codable {
+    var workStartedDate: Date
+    var workEndedDate: Date
+    var speciality: String
+    var companyName: String
+    var country: String
+    var duties: [String]
 }
 
-struct Skills {
-    let type: String
-    let description: String
+struct Education: Codable {
+    var startedDate: Date
+    var endedDate: Date
+    var education: String
+    var description: String
+}
+
+struct Skills: Codable {
+    var type: String
+    var description: String
 }
 
 
-struct CVConstructor {
-    let fullname: String
-    let speciality: String
-    let phone: String
-    let email: String
-    let summary: String
-    let workExperience: [Work]
-    let education: [Education]
-    let skills: [Skills]
+struct CVConstructor: Codable {
+    var firstname: String
+    var lastname: String
+    var email: String
+    var phone: String
+    var summary: String
+    var jobTitle: String
+    var site: String
+    var location: String
+    var workExperience: [WorkExperienceInput]
+    var education: [EducationInput]
+    var skills: [SkillInput]
 }
 
-struct WorkExperienceInput: Identifiable, Hashable {
+struct WorkExperienceInput: Identifiable, Hashable, Codable {
     var id = UUID()
     var workStartedDate: Date = Date()
     var workEndedDate: Date = Date()
@@ -45,7 +54,7 @@ struct WorkExperienceInput: Identifiable, Hashable {
     var jobDescirption: String = ""
 }
 
-struct EducationInput: Identifiable {
+struct EducationInput: Identifiable, Codable {
     var id = UUID()
     var startedDate: Date = Date()
     var endedDate: Date = Date()
@@ -55,7 +64,7 @@ struct EducationInput: Identifiable {
     var stillStudyingHere: Bool = false
 }
 
-struct SkillInput: Identifiable, Hashable {
+struct SkillInput: Identifiable, Hashable, Codable {
     var id = UUID() 
     var description: String = ""
 }

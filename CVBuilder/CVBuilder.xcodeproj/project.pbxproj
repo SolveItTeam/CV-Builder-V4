@@ -17,6 +17,8 @@
 		30B90C9F2D70952400FC3505 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 30B90C9E2D70952400FC3505 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		30B90CA12D70952400FC3505 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30B90CA02D70952400FC3505 /* FirebaseCrashlytics */; };
 		30B90CA32D70952400FC3505 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 30B90CA22D70952400FC3505 /* FirebaseRemoteConfig */; };
+		30E088BF2D91E6C2007605F3 /* CarouselStack in Frameworks */ = {isa = PBXBuildFile; productRef = 30E088BE2D91E6C2007605F3 /* CarouselStack */; };
+		30E088C12D91E6C2007605F3 /* ShuffleIt in Frameworks */ = {isa = PBXBuildFile; productRef = 30E088C02D91E6C2007605F3 /* ShuffleIt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,12 +55,14 @@
 				30B90C9F2D70952400FC3505 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				300FA9662D7642E200B8832F /* sharelink-for-swiftui in Frameworks */,
 				30B90C952D70933300FC3505 /* Reachability in Frameworks */,
+				30E088BF2D91E6C2007605F3 /* CarouselStack in Frameworks */,
 				30B90CA12D70952400FC3505 /* FirebaseCrashlytics in Frameworks */,
 				30B90C9D2D70952400FC3505 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				30B90C9B2D70952400FC3505 /* FirebaseAnalytics in Frameworks */,
 				30B90C982D70938000FC3505 /* Adapty in Frameworks */,
 				30B90CA32D70952400FC3505 /* FirebaseRemoteConfig in Frameworks */,
 				3069FA7E2D74F81E00C61E15 /* RswiftLibrary in Frameworks */,
+				30E088C12D91E6C2007605F3 /* ShuffleIt in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +117,8 @@
 				30B90CA22D70952400FC3505 /* FirebaseRemoteConfig */,
 				3069FA7D2D74F81E00C61E15 /* RswiftLibrary */,
 				300FA9652D7642E200B8832F /* sharelink-for-swiftui */,
+				30E088BE2D91E6C2007605F3 /* CarouselStack */,
+				30E088C02D91E6C2007605F3 /* ShuffleIt */,
 			);
 			productName = CVBuilder;
 			productReference = 30B90C2D2D7073C200FC3505 /* CVBuilder.app */;
@@ -154,6 +160,7 @@
 				30B90C992D70952400FC3505 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				3069FA7C2D74F81E00C61E15 /* XCRemoteSwiftPackageReference "R.swift" */,
 				300FA9642D7642E200B8832F /* XCRemoteSwiftPackageReference "sharelink-for-swiftui" */,
+				30E088BD2D91E6C2007605F3 /* XCRemoteSwiftPackageReference "ShuffleIt" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 30B90C2E2D7073C200FC3505 /* Products */;
@@ -498,6 +505,14 @@
 				minimumVersion = 11.9.0;
 			};
 		};
+		30E088BD2D91E6C2007605F3 /* XCRemoteSwiftPackageReference "ShuffleIt" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dscyrescotti/ShuffleIt";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -554,6 +569,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 30B90C992D70952400FC3505 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseRemoteConfig;
+		};
+		30E088BE2D91E6C2007605F3 /* CarouselStack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30E088BD2D91E6C2007605F3 /* XCRemoteSwiftPackageReference "ShuffleIt" */;
+			productName = CarouselStack;
+		};
+		30E088C02D91E6C2007605F3 /* ShuffleIt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30E088BD2D91E6C2007605F3 /* XCRemoteSwiftPackageReference "ShuffleIt" */;
+			productName = ShuffleIt;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

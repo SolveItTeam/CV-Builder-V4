@@ -68,9 +68,7 @@ struct HomeView: View {
                 }
                 .padding(.top, 10)
                 
-                
-                
-                
+                 
                 if true {
                     VStack(spacing: 0) {
                         Circle().fill(.c393939.opacity(0.6))

@@ -10,19 +10,18 @@ enum OnboardingMetaData: CaseIterable {
     var image: ImageResource {
         switch self {
         case .page1:
-            return .woman
+            return .onb1
         case .page2:
-            return .woman
+            return .onb2
         case .page3:
-            return .woman
+            return .onb3
         case .page4:
-            return .woman
+            return .onb4
         case .page5:
-            return .woman
+            return .onb5
         }
     }
-    
-    
+     
 
     var title: String {
         switch self {
@@ -38,8 +37,6 @@ enum OnboardingMetaData: CaseIterable {
             return R.string.localizable.premiumIsYourWayToThePerfectResume()
         }
     }
-    
-
 
     var subtitle: String {
         switch self {

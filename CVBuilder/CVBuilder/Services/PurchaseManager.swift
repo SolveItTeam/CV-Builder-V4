@@ -25,7 +25,8 @@ final class PurchaseManager: ObservableObject {
         } else {
             return User(
                 id: UUID().uuidString,
-                isPremium: false
+                isPremium: false,
+                savedData: CVConstructor(firstname: "", lastname: "", email: "", phone: "", summary: "", jobTitle: "", site: "", location: "", workExperience: [], education: [], skills: [])
             )
         }
     }

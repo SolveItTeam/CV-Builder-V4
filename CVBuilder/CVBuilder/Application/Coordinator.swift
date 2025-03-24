@@ -31,31 +31,29 @@ final class Coordinator: NSObject {
     }
     
     func start() {
-//        let launchController = UIHostingController(rootView: LaunchScreenView())
-//        
-//        navigationController.setViewControllers([launchController],
-//                                                animated: true)
-//        
+        let launchController = UIHostingController(rootView: LaunchScreenView())
+        
+        navigationController.setViewControllers([launchController],
+                                                animated: true)
+        
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
-//        
-//        sinkWithNotificationCenter()
-//        
-//        tabBarView = MainTabbedView(coordinator: self)
-//        
-//        Task {
-//            await fetchAppConfigAndPurchases()
-//            
-//            await MainActor.run { [weak self] in
-//                guard let self else { return }
-              //  if isOnboardingCompleted || PurchaseManager.shared.isPremium {
-                    startMainFlow()
-//                } else {
-//                    startOnboarding()
-//                }
-//            }
+        
+        sinkWithNotificationCenter()
+        
+        Task {
+            await fetchAppConfigAndPurchases()
             
-//        }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                if isOnboardingCompleted || PurchaseManager.shared.isPremium {
+                    startMainFlow()
+                } else {
+                    startOnboarding()
+                }
+            }
+            
+        }
         
         PaymentRefunder.shared.closeAction = { [weak self] in
             self?.popToRootView()
@@ -75,24 +73,24 @@ final class Coordinator: NSObject {
         })
     }
     
-//    func startOnboarding() {
-//        let onboardingViewController = UIHostingController(
-//            rootView: OnboardingView(
-//                viewModel: .init(
-//                    navigationLayer: self,
-//                    finishedOnboarding: { [weak self] in
-//                        self?.isOnboardingCompleted = true
-//                        self?.startMainFlow()
-//                    }
-//                )
-//            )
-//        )
-//        
-//        navigationController.setViewControllers([onboardingViewController], animated: true)
-//        
-//        window?.rootViewController = navigationController
-//        window?.makeKeyAndVisible()
-//    }
+    func startOnboarding() {
+        let onboardingViewController = UIHostingController(
+            rootView: OnboardingView(
+                viewModel: .init(
+                    coordinator: self,
+                    finishedOnboarding: { [weak self] in
+                        self?.isOnboardingCompleted = true
+                        self?.startMainFlow()
+                    }
+                )
+            )
+        )
+        
+        navigationController.setViewControllers([onboardingViewController], animated: true)
+        
+        window?.rootViewController = navigationController
+        window?.makeKeyAndVisible()
+    }
     
     func showProfileView() {
         let profileCV = ProfileView(viewModel: .init(coordinator: self))
@@ -101,24 +99,31 @@ final class Coordinator: NSObject {
     }
     
     func showResumeTemplates() {
-        let cvTemplate = ProfileView(viewModel: .init(coordinator: self))
+        let cvTemplate = PopularTemplatesView(viewModel: .init(coordinator: self))
+        
+        navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
+    }
+    
+    func showTemplatePreview(cvTemplate: CVTemplate) {
+        let cvTemplate = TemplatePreviewView(viewModel: .init(coordinator: self, chosenTemplate: cvTemplate))
         
         navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
     }
 
+
     func showPaywall() {
-//        guard shouldShowPaywall, !isPaywallPresented else { return }
-//        
-//        isPaywallPresented = true
-//        
-//        let payWallViewController = UIHostingController(rootView: PaywallView(viewModel: .init(navigationLayer: self)))
-//        
-//            payWallViewController.modalPresentationStyle = .fullScreen
-//
-//        
-//        navigationController.present(payWallViewController, animated: true) { [weak self] in
-//            self?.isPaywallPresented = false
-//        }
+        guard shouldShowPaywall, !isPaywallPresented else { return }
+        
+        isPaywallPresented = true
+        
+        let payWallViewController = UIHostingController(rootView: PaywallView(viewModel: .init(coordinator: self)))
+        
+            payWallViewController.modalPresentationStyle = .fullScreen
+
+        
+        navigationController.present(payWallViewController, animated: true) { [weak self] in
+            self?.isPaywallPresented = false
+        }
     }
 }
 
@@ -209,7 +214,7 @@ extension Coordinator {
         if !PurchaseManager.shared.isPremium && isOnboardingCompleted {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             await MainActor.run { [weak self] in
-                self?.showPaywall()
+           //     self?.showPaywall()
             }
         }
     }

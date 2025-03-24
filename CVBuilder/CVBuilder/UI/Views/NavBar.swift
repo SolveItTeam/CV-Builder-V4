@@ -37,6 +37,7 @@ struct NavBar: View {
 }
 
 struct BackButtonBar: View {
+    @Binding var showProIcon: Bool
     let backAction: () -> Void
     let action: () -> Void
     
@@ -54,22 +55,24 @@ struct BackButtonBar: View {
             
             Spacer()
             
-            Button {
-                action()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(.pro)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 16)
-                    
-                    Text(R.string.localizable.prO)
-                        .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
-                        .foregroundStyle(.white)
+            if showProIcon {
+                Button {
+                    action()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(.pro)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 16)
+                        
+                        Text(R.string.localizable.prO)
+                            .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(10)
+                    .background(.c3200E0)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
                 }
-                .padding(10)
-                .background(.c3200E0)
-                .clipShape(RoundedRectangle(cornerRadius: 32))
             }
         }
     }

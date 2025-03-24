@@ -13,7 +13,7 @@ final class PaymentRefunder: NSObject, MFMailComposeViewControllerDelegate {
         errorTitle: String,
         errorMessage: String,
         supportEmail: String,
-        subject: String? = "E Signature",
+        subject: String? = "CV Builder",
         body: String? = nil
     ) {
         DispatchQueue.main.async {
@@ -28,7 +28,7 @@ final class PaymentRefunder: NSObject, MFMailComposeViewControllerDelegate {
             
             let picker = MFMailComposeViewController()
             picker.setToRecipients([supportEmail])
-            picker.setSubject(subject ?? "E Signature")
+            picker.setSubject(subject ?? "CV Builder")
             
             var emailBody = body ?? "Please describe your issue here."
             emailBody += "\n\n---\nApp Version: \(self.getAppVersion())\nDevice: \(self.getDeviceInfo())"

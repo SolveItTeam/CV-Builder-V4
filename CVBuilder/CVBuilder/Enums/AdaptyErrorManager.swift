@@ -2,7 +2,7 @@ import Foundation
 import Adapty
 
 struct AdaptyErrorManager {
-    var log: LocalizedStringResource = ""
+    var log: String = ""
     var adaptyErrorCode: AdaptyError.ErrorCode = .unknown
     
     init(error: Error) {
@@ -18,82 +18,82 @@ struct AdaptyErrorManager {
         return adaptyError.adaptyErrorCode
     }
     
-    private func getLog(error: Error) -> LocalizedStringResource {
+    private func getLog(error: Error) -> String {
         guard let adaptyError = error as? AdaptyError else {
-            return LocalizedStringResource(stringLiteral: error.localizedDescription)
+            return  error.localizedDescription
         }
         
         switch adaptyError.adaptyErrorCode {
         case .unknown:
-            return LocalizedStringResource(stringLiteral: "Unknown Error")
+            return R.string.localizable.unknown_error()
         case .clientInvalid:
-            return LocalizedStringResource(stringLiteral: "Client Invalid")
+            return R.string.localizable.client_invalid()
         case .paymentCancelled:
-            return LocalizedStringResource(stringLiteral: "Payment Cancelled")
+            return R.string.localizable.payment_cancelled()
         case .paymentInvalid:
-            return LocalizedStringResource(stringLiteral: "One of the payment details was not recognized.")
+            return R.string.localizable.payment_invalid()
         case .paymentNotAllowed:
-            return LocalizedStringResource(stringLiteral: "You are not authorized to make payments.")
+            return R.string.localizable.payment_not_allowed()
         case .storeProductNotAvailable:
-            return LocalizedStringResource(stringLiteral: "The requested item is not available in the store.")
+            return R.string.localizable.store_product_not_available()
         case .cloudServicePermissionDenied:
-            return LocalizedStringResource(stringLiteral: "Access to Cloud service information is denied.")
+            return R.string.localizable.cloud_service_permission_denied()
         case .cloudServiceNetworkConnectionFailed:
-            return LocalizedStringResource(stringLiteral: "Unable to connect to the network.")
+            return R.string.localizable.cloud_service_network_failed()
         case .cloudServiceRevoked:
-            return LocalizedStringResource(stringLiteral: "Permission to use the cloud service has been revoked.")
+            return R.string.localizable.cloud_service_revoked()
         case .privacyAcknowledgementRequired:
-            return LocalizedStringResource(stringLiteral: "You need to acknowledge Apple's privacy policy for Apple Music.")
+            return R.string.localizable.privacy_acknowledgement_required()
         case .unauthorizedRequestData:
-            return LocalizedStringResource(stringLiteral: "The app is attempting to use unauthorized data.")
+            return R.string.localizable.unauthorized_request_data()
         case .invalidOfferIdentifier:
-            return LocalizedStringResource(stringLiteral: "The offer identifier is invalid.")
+            return R.string.localizable.invalid_offer_identifier()
         case .invalidSignature:
-            return LocalizedStringResource(stringLiteral: "The payment discount signature is invalid.")
+            return R.string.localizable.invalid_signature()
         case .missingOfferParams:
-            return LocalizedStringResource(stringLiteral: "Some parameters are missing in the payment discount.")
+            return R.string.localizable.missing_offer_params()
         case .invalidOfferPrice:
-            return LocalizedStringResource(stringLiteral: "The price specified in App Store Connect is no longer valid.")
+            return R.string.localizable.invalid_offer_price()
         case .noProductIDsFound:
-            return LocalizedStringResource(stringLiteral: "No In-App Purchase product identifiers were found.")
+            return R.string.localizable.no_product_ids_found()
         case .productRequestFailed:
-            return LocalizedStringResource(stringLiteral: "Unable to fetch available In-App Purchase products at the moment.")
+            return R.string.localizable.product_request_failed()
         case .cantMakePayments:
-            return LocalizedStringResource(stringLiteral: "In-App Purchases are not allowed on this device.")
+            return R.string.localizable.cant_make_payments()
         case .cantReadReceipt:
-            return LocalizedStringResource(stringLiteral: "Cannot find a valid receipt.")
+            return R.string.localizable.cant_read_receipt()
         case .productPurchaseFailed:
-            return LocalizedStringResource(stringLiteral: "Product purchase failed.")
+            return R.string.localizable.product_purchase_failed()
         case .refreshReceiptFailed:
-            return LocalizedStringResource(stringLiteral: "Failed to refresh receipt.")
+            return R.string.localizable.refresh_receipt_failed()
         case .notActivated:
-            return LocalizedStringResource(stringLiteral: "You need to be authenticated to perform requests.")
+            return R.string.localizable.not_activated()
         case .badRequest:
-            return LocalizedStringResource(stringLiteral: "The request made is not valid.")
+            return R.string.localizable.bad_request()
         case .serverError:
-            return LocalizedStringResource(stringLiteral: "There was an error on the server side.")
+            return R.string.localizable.server_error()
         case .networkFailed:
-            return LocalizedStringResource(stringLiteral: "Failed to complete the network request.")
+            return R.string.localizable.network_failed()
         case .decodingFailed:
-            return LocalizedStringResource(stringLiteral: "Unable to decode the response.")
+            return R.string.localizable.decoding_failed()
         case .encodingFailed:
-            return LocalizedStringResource(stringLiteral: "Failed to encode parameters for the request.")
+            return R.string.localizable.encoding_failed()
         case .analyticsDisabled:
-            return LocalizedStringResource(stringLiteral: "Analytics events cannot be handled because you have opted out.")
+            return R.string.localizable.analytics_disabled()
         case .wrongParam:
-            return LocalizedStringResource(stringLiteral: "An incorrect parameter was passed.")
+            return R.string.localizable.wrong_param()
         case .activateOnceError:
-            return LocalizedStringResource(stringLiteral: "Activate once error.")
+            return R.string.localizable.activate_once_error()
         case .profileWasChanged:
-            return LocalizedStringResource(stringLiteral: "The user profile was changed during the operation.")
+            return R.string.localizable.profile_was_changed()
         case .unsupportedData:
-            return LocalizedStringResource(stringLiteral: "Data is unsupported.")
+            return R.string.localizable.unsupported_data()
         case .fetchTimeoutError:
-            return LocalizedStringResource(stringLiteral: "The request timed out.")
+            return R.string.localizable.fetch_timeout_error()
         case .operationInterrupted:
-            return LocalizedStringResource(stringLiteral: "The operation was interrupted by the system.")
+            return R.string.localizable.operation_interrupted()
         case .fetchSubscriptionStatusFailed:
-            return LocalizedStringResource(stringLiteral: "The request timed out.")
+            return R.string.localizable.fetch_timeout_error()
         }
     }
 }

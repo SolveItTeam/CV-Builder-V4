@@ -17,7 +17,7 @@ struct ProfileView: View {
                 Spacer()
                 
                 Button {
-                    
+                    viewModel.isCloseResumeAlert = true
                 } label: {
                     Image(.cross)
                         .resizable()
@@ -102,23 +102,27 @@ struct ProfileView: View {
             }
             
             HStack(spacing: 14) {
-                Button {
-                    viewModel.popView()
-                } label: {
-                    Image(.left)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 14, height: 14)
-                }
-                .buttonStyle(CircularButton(opacity: 0.6))
                 
-                .frame(width: 60, height: 60)
-                .overlay {
-                    Circle()
-                        .stroke(.cE1FF41, lineWidth: 1)
+                if viewModel.profileData != .skills {
+                    Button {
+                        viewModel.popView()
+                    } label: {
+                        Image(.left)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 14, height: 14)
+                    }
+                    .buttonStyle(CircularButton(opacity: 0.6))
+                    
+                    .frame(width: 60, height: 60)
+                    .overlay {
+                        Circle()
+                            .stroke(.cE1FF41, lineWidth: 1)
+                    }
                 }
                 
                 Button {
+                    
                     switch viewModel.profileData {
                     case .profile:
                         viewModel.profileData = .contact
@@ -129,28 +133,40 @@ struct ProfileView: View {
                     case .education:
                         viewModel.profileData = .skills
                     case .skills:
-                        break
+                        viewModel.saveProfile()
                     }
                 } label: {
-                    HStack(spacing: 14) {
-                        Text(R.string.localizable.next())
-                            .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
-                        Image(.right)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 14, height: 14)
+                    if viewModel.profileData == .skills {
+                        HStack(spacing: 14) {
+                            Text(R.string.localizable.finish())
+                                .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(.c393939)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .contentShape(Rectangle())
+                    } else {
+                        HStack(spacing: 14) {
+                            Text(R.string.localizable.next())
+                                .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                            Image(.right)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14, height: 14)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(.c393939)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .contentShape(Rectangle())
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 60)
-                .background(.c393939)
-                .clipShape(RoundedRectangle(cornerRadius: 32))
                 .buttonStyle(ScaleButtonStyle())
             }
             .padding(.bottom, 8)
             .padding(.horizontal, 16)
         }
-        
         .animation(.default, value: viewModel.profileData)
         .sheet(isPresented: $viewModel.showImagePicker) {
             ImagePicker(image: $viewModel.selectedImage)
@@ -224,6 +240,22 @@ struct ProfileView: View {
                 }
             }
         }
+        .alert(R.string.localizable.closeResume(), isPresented: $viewModel.isCloseResumeAlert, actions:  {
+            Button(R.string.localizable.saveTemplate(), action: {
+                
+            })
+            Button(R.string.localizable.exitWithoutSaving(), action: {
+                
+            })
+            Button(R.string.localizable.cancel(), role: .cancel, action: {
+                
+            })
+        }, message: {
+            Text(R.string.localizable.areYouSureYouWantToCloseResumeAllUnsavedChangesWillBeLost())
+        })
+        .onDisappear {
+            viewModel.saveProfile()
+        }
     }
     
     @ViewBuilder private func profileInfoView() -> some View {
@@ -246,8 +278,7 @@ struct ProfileView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 14, height: 14)
-                                        .foregroundStyle(.c0A0A0A)
-                                    
+                                        .foregroundStyle(.c0A0A0A) 
                                 }
                         }
                         .padding(.bottom, 11)
@@ -283,8 +314,6 @@ struct ProfileView: View {
                         .padding(.trailing, -4)
                     }
             }
-            
-            
             
             MainTextField(placeholder: R.string.localizable.firstName(), text: $viewModel.firstname, isFocused: $isKeyboardVisible, type: .firstName)
                 .id(FocusableField.firstName)
@@ -389,78 +418,87 @@ struct ProfileView: View {
     }
     
     @ViewBuilder private func skillsView() -> some View {
-        VStack {
-            HStack {
-                Text(R.string.localizable.addSkills())
-                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
-                
-                Spacer()
-                
-                if viewModel.skills.count < viewModel.maxSkills {
+        VStack(spacing: 10) {
+            VStack(spacing: 6) {
+                HStack {
+                    Text(R.string.localizable.addSkills())
+                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                    
+                    Spacer()
+                     
                         Button {
                             viewModel.showSkillsSheet = true
                         } label: {
-                            Image(.plus)
+                            Image(viewModel.skills.count > 0 ? .edit : .plus)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 14, height: 14)
+                                .frame(width: viewModel.skills.count > 0 ? 18 : 14, height: viewModel.skills.count > 0 ? 18 : 14)
                         }
                         .buttonStyle(CircularButton(opacity: 0.6))
-                    }
+                }
                 
-            }
-             
-            ForEach(viewModel.skills.chunked(into: 2), id: \.self) { pair in
-                HStack(spacing: 8) {
-                    ForEach(pair) { skill in
-                        HStack(spacing: 3) {
-                            Text(skill.description)
-                                .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                            
-                            Button {
-                                if let index = viewModel.skills.firstIndex(where: { $0.description == skill.description } ) {
-                                    viewModel.skills.remove(at: index)
-                                }
-                            } label: {
-                                Image(.crossWithFrame)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
+                ForEach(viewModel.skills.chunked(into: 2), id: \.self) { pair in
+                    HStack(spacing: 8) {
+                        ForEach(pair) { skill in
+                            HStack(spacing: 3) {
+                                Text(skill.description)
+                                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                
                             }
-                            
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(.c686868)
+                            .clipShape(RoundedRectangle(cornerRadius: 32))
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(.c686868)
-                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        
+                        Spacer()
+                        
                     }
-                    
-                    Spacer()
-                    
                 }
             }
             
-            HStack {
-                Text(R.string.localizable.addLanguages())
-                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
-                
-                Spacer()
-                
-                if viewModel.languages.count < viewModel.maxLanguages {
+            VStack(spacing: 6) {
+                HStack {
+                    Text(R.string.localizable.addLanguages())
+                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                    
+                    Spacer()
+                     
                         Button {
                             viewModel.showLanguagesSheet = true
                         } label: {
-                            Image(.plus)
+                            Image(viewModel.languages.count > 0 ? .edit : .plus)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 14, height: 14)
+                                .frame(width: viewModel.languages.count > 0 ? 18 : 14, height: viewModel.languages.count > 0 ? 18 : 14)
                         }
                         .buttonStyle(CircularButton(opacity: 0.6))
-                    }
+                }
                 
+                ForEach(viewModel.languages.chunked(into: 2), id: \.self) { pair in
+                    HStack(spacing: 8) {
+                        ForEach(pair) { language in
+                            HStack(spacing: 3) {
+                                Text(language.name)
+                                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                              
+                            }
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(.c686868)
+                            .clipShape(RoundedRectangle(cornerRadius: 32))
+                        }
+                        
+                        Spacer()
+                        
+                    }
+                }
             }
         }
         .transition(.move(edge: .trailing))
@@ -513,7 +551,6 @@ struct WorkInputView: View {
                         .focused($isKeyboardVisible, equals: .location)
                     
                     MainTextField(placeholder: R.string.localizable.startOfEmployment(), text: $formattedDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
-                    
                         .disabled(true)
                         .overlay {
                             DatePicker("", selection: $work.workStartedDate, displayedComponents: .date)
@@ -582,10 +619,10 @@ struct WorkInputView: View {
                     .background(couldSave ? .cE1FF41 : .c686868)
                     .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
                 
-                .clipShape(RoundedRectangle(cornerRadius: 32))
-                .contentShape(Rectangle())
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
             }
-
+            
             .disabled(!couldSave)
             .buttonStyle(ScaleButtonStyle())
         }
@@ -666,7 +703,6 @@ struct EducationInputView: View {
                                         formattedEndDate = Date().monthYearString
                                     }
                                 }
-                            
                         }
                         .clipped()
                         .contentShape(Rectangle())
@@ -697,10 +733,10 @@ struct EducationInputView: View {
                     .background(couldSave ? .cE1FF41 : .c686868)
                     .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
                 
-                .clipShape(RoundedRectangle(cornerRadius: 32))
-                .contentShape(Rectangle())
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
             }
-
+            
             .disabled(!couldSave)
             .buttonStyle(ScaleButtonStyle())
         }
@@ -713,10 +749,13 @@ struct SkillsInputView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var skills: [SkillInput]
     @FocusState var isKeyboardVisible: FocusableField?
+    @State var isShowingAlert: Bool = false
+    @State var appError: AppError = .raw(title: R.string.localizable.deleteSkill(), subTitle: R.string.localizable.areYouSureYouWantToDeleteThisSkillThisActionCannotBeUndone())
     @State var input: String =  ""
+    @State var selectedSkill: SkillInput?
     let maxSkillsCount: Int
     var onSave: () -> Void
-
+    
     var couldSave: Bool {
         return !skills.isEmpty
     }
@@ -756,9 +795,9 @@ struct SkillsInputView: View {
                                         .truncationMode(.tail)
                                     
                                     Button {
-                                        if let index = skills.firstIndex(where: { $0.description == skill.description } ) {
-                                            skills.remove(at: index)
-                                        }
+                                        selectedSkill = skill
+                                        
+                                        isShowingAlert = true
                                     } label: {
                                         Image(.crossWithFrame)
                                             .resizable()
@@ -774,9 +813,7 @@ struct SkillsInputView: View {
                             }
                             
                             Spacer()
-
                         }
-
                     }
                 }
                 .padding(.top, 2)
@@ -797,15 +834,33 @@ struct SkillsInputView: View {
                     .background(couldSave ? .cE1FF41 : .c686868)
                     .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
                 
-                .clipShape(RoundedRectangle(cornerRadius: 32))
-                .contentShape(Rectangle())
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
             }
-
+            
             .disabled(!couldSave)
             .buttonStyle(ScaleButtonStyle())
         }
         .padding(.horizontal, 16)
         .background(.c393939)
+        .alert(isPresented: $isShowingAlert) {
+ 
+                return Alert(
+                    title: Text( appError.title),
+                    message: Text( appError.subTitle),
+                    primaryButton: .default(
+                        Text(R.string.localizable.delete)
+                    ) {
+                        if let selectedSkill, let index = skills.firstIndex(where: { $0.description == selectedSkill.description } ) {
+                            skills.remove(at: index)
+                        }
+                    },
+                    secondaryButton: .default(
+                        Text(R.string.localizable.cancel)
+                    ) {}
+                )
+             
+        }
     }
 }
 
@@ -815,9 +870,11 @@ struct LanguagesInputView: View {
     @Binding var languages: [Language]
     @FocusState var isKeyboardVisible: FocusableField?
     @State var input: String =  ""
+    @State var isShowingAlert: Bool = false
+    @State var appError: AppError = .raw(title: R.string.localizable.deleteLanguage(), subTitle: R.string.localizable.areYouSureYouWantToDeleteThisLanguageThisActionCannotBeUndone())
+    @State var selectedLanguage: Language?
     let maxLanguagesCount: Int
     var onSave: () -> Void
-    
     
     var couldSave: Bool {
         return !languages.isEmpty
@@ -842,11 +899,11 @@ struct LanguagesInputView: View {
                         languages.append(Language(name: input))
                         input.removeAll()
                     }
-                        .id(FocusableField.universityName)
-                        .focused($isKeyboardVisible, equals: .skills)
-                        .disabled(languages.count == maxLanguagesCount)
-                        .opacity(languages.count == maxLanguagesCount ? 0.4 : 1)
-                        
+                    .id(FocusableField.universityName)
+                    .focused($isKeyboardVisible, equals: .skills)
+                    .disabled(languages.count == maxLanguagesCount)
+                    .opacity(languages.count == maxLanguagesCount ? 0.4 : 1)
+                    
                     ForEach(languages.chunked(into: 2), id: \.self) { pair in
                         HStack(spacing: 8) {
                             ForEach(pair) { language in
@@ -858,9 +915,8 @@ struct LanguagesInputView: View {
                                         .truncationMode(.tail)
                                     
                                     Button {
-                                        if let index = languages.firstIndex(where: { $0.name == language.name } ) {
-                                            languages.remove(at: index)
-                                        }
+                                        selectedLanguage = language
+                                        isShowingAlert = true
                                     } label: {
                                         Image(.crossWithFrame)
                                             .resizable()
@@ -876,7 +932,7 @@ struct LanguagesInputView: View {
                             }
                             
                             Spacer()
-
+                            
                         }
                     }
                 }
@@ -898,15 +954,33 @@ struct LanguagesInputView: View {
                     .background(couldSave ? .cE1FF41 : .c686868)
                     .foregroundStyle(couldSave ? .blackMain : .cA1A1A1)
                 
-                .clipShape(RoundedRectangle(cornerRadius: 32))
-                .contentShape(Rectangle())
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
             }
-
+            
             .disabled(!couldSave)
             .buttonStyle(ScaleButtonStyle())
         }
         .padding(.horizontal, 16)
         .background(.c393939)
+        .alert(isPresented: $isShowingAlert) {
+ 
+                return Alert(
+                    title: Text( appError.title),
+                    message: Text( appError.subTitle),
+                    primaryButton: .default(
+                        Text(R.string.localizable.delete)
+                    ) {
+                        if let selectedLanguage, let index = languages.firstIndex(where: { $0.name == selectedLanguage.name } ) {
+                            languages.remove(at: index)
+                        }
+                    },
+                    secondaryButton: .default(
+                        Text(R.string.localizable.cancel)
+                    ) {}
+                )
+             
+        }
     }
 }
 

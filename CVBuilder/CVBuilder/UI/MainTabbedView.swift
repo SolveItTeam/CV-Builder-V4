@@ -10,9 +10,7 @@ struct MainTabbedView: View {
             TabView(selection: $selectedTab) {
                 HomeView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.home.rawValue)
-                
-                SettingsView(viewModel: .init(coordinator: coordinator))
-                    .tag(TabFlow.plus.rawValue)
+
                 
                 HistoryView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.history.rawValue)
@@ -25,15 +23,17 @@ struct MainTabbedView: View {
             VStack {
                 ZStack{
                     HStack{
-                        ForEach((TabFlow.allCases), id: \.self){ item in
+                        ForEach((TabFlow.allCases), id: \.self) { item in
                             Button{
+                                selectedTab = item.rawValue
+                                
                                 switch selectedTab {
                                 case 1:
                                     coordinator.showProfileView()
                                 case 2:
                                     break
                                 default:
-                                    selectedTab = item.rawValue
+                                    break
                                 }
                                
                             } label: {

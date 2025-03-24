@@ -3,6 +3,8 @@ import Foundation
 struct AppRemoteConfig: Codable {
     struct PaywallConfig: Codable {
         let isPriceTitle: Bool
+        let closeActionDuration: Double
+        let closOpacity: Double
     }
 
     let paywallConfig: PaywallConfig
@@ -13,7 +15,9 @@ struct AppRemoteConfig: Codable {
     static var `default`: AppRemoteConfig {
         .init(
             paywallConfig: PaywallConfig(
-                isPriceTitle: false
+                isPriceTitle: false,
+                closeActionDuration: 0.0,
+                closOpacity: 1.0
             ),
             freeTries: 1,
             enabledAppRatingRequest: false,
