@@ -1,25 +1,28 @@
 import SwiftUI
-
+import Combine
 
 final class HistoryViewModel: ObservableObject {
     @Published var showProIcon: Bool
+    @Published var repository: HistoryItemRepository = .shared
     @Published var historyItems: [HistoryItem] = []
     
     private let coordinator: Coordinator
-    
+    private var cancellables = Set<AnyCancellable>()
     private let purchaseManager: PurchaseManager = .shared
-    let isFromPush: Bool
     
-    init(coordinator: Coordinator, isFromPush: Bool) {
+    init(coordinator: Coordinator) {
         self.coordinator = coordinator
-        self.isFromPush = isFromPush
+        
         showProIcon = !purchaseManager.isPremium
         
         purchaseManager.$isPremium
             .map { !$0 }
             .assign(to: &$showProIcon)
         
-        fetchHistory()
+        repository.$historyItems
+            .assign(to: \.historyItems, on: self)
+            .store(in: &cancellables)
+         
     }
     
     func showPaywall() {
@@ -38,17 +41,13 @@ final class HistoryViewModel: ObservableObject {
         coordinator.popView()
     }
     
-    func fetchHistory() {
-        Task {
-            let items = HistoryItemRepository.shared.fetchAll()
-            await MainActor.run {
-                self.historyItems = items
-            }
-        }
+    func rename(_ item: HistoryItem, jobTitle: String) {
+        HistoryItemRepository.shared.renameHistoryItem(item, newJobTitle: jobTitle)
+        objectWillChange.send()
     }
     
     func deleteItem(_ item: HistoryItem) {
-        HistoryItemRepository.shared.delete(item)
-        fetchHistory()
+        HistoryItemRepository.shared.deleteHistoryItem(item)
+        objectWillChange.send()
     }
 }

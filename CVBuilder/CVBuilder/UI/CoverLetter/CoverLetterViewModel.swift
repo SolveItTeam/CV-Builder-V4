@@ -1,22 +1,146 @@
 import SwiftUI
+import Combine
+import CoreData
 
 final class CoverLetterViewModel: ObservableObject {
     @Published var showProIcon: Bool
+    @Published var repository: HistoryItemRepository = .shared
+    @Published var coverLetterItems: [CoverLetterItem] = []
     @Published var historyItems: [HistoryItem] = []
+    @Published var selectedCV: HistoryItem?
+    @Published var firstname: String = ""
+    @Published var lastname: String = ""
+    @Published var email: String = ""
+    @Published var phone: String = ""
+    @Published var summary: String = ""
+    @Published var jobTitle: String = ""
+    @Published var site: String = ""
+    @Published var isCloseResumeAlert: Bool = false
+    
     
     private let coordinator: Coordinator
-    
+    private var cancellables = Set<AnyCancellable>()
     private let purchaseManager: PurchaseManager = .shared
- 
+    
     init(coordinator: Coordinator) {
         self.coordinator = coordinator
+        
         showProIcon = !purchaseManager.isPremium
         
         purchaseManager.$isPremium
             .map { !$0 }
             .assign(to: &$showProIcon)
         
-        fetchHistory()
+        repository.$coverLetterItems
+            .assign(to: \.coverLetterItems, on: self)
+            .store(in: &cancellables)
+         
+        repository.$historyItems
+            .assign(to: \.historyItems, on: self)
+            .store(in: &cancellables)
+        
+        
+    }
+    
+    func prefill() {
+        if let selectedCV = selectedCV,
+           let nsdata = selectedCV.cvConstructorData as? NSData {
+            let data = Data(referencing: nsdata)
+            do {
+                let cvConstructor = try JSONDecoder().decode(CVConstructor.self, from: data)
+                firstname = cvConstructor.firstname
+                lastname = cvConstructor.lastname
+                email = cvConstructor.email
+                phone = cvConstructor.phone
+                summary = cvConstructor.summary
+                jobTitle = cvConstructor.jobTitle
+                site = cvConstructor.site 
+            } catch {
+                print("Error decoding CVConstructor: \(error)")
+            }
+        }
+    }
+    
+    func saveCoverLetterChanges() {
+        // Ensure we have a selected item with a valid id.
+        guard let selectedCV = selectedCV, let id = selectedCV.id else { return }
+        
+        let context = DataController.shared.viewContext
+        let request: NSFetchRequest<CoverLetterItem> = CoverLetterItem.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        do {
+            if let item = try context.fetch(request).first {
+                // Found an existing CoverLetterItem: update its CVConstructor.
+                if let nsdata = item.cvConstructorData as? NSData {
+                    let data = Data(referencing: nsdata)
+                    var cvConstructor = try JSONDecoder().decode(CVConstructor.self, from: data)
+                    
+                    // Update only the fields that the user has edited.
+                    cvConstructor.firstname = firstname
+                    cvConstructor.lastname = lastname
+                    cvConstructor.email = email
+                    cvConstructor.phone = phone
+                    cvConstructor.summary = summary
+                    cvConstructor.jobTitle = jobTitle
+                    cvConstructor.site = site
+                    
+                    let updatedData = try JSONEncoder().encode(cvConstructor)
+                    item.cvConstructorData = updatedData as NSData
+                } else {
+                    let cvConstructor = CVConstructor(
+                        firstname: firstname,
+                        lastname: lastname,
+                        email: email,
+                        phone: phone,
+                        summary: summary,
+                        jobTitle: jobTitle,
+                        site: site,
+                        location: "",
+                        workExperience: [],
+                        education: [],
+                        skills: [],
+                        languages: [],
+                        profileImagePath: nil
+                    )
+                    let updatedData = try JSONEncoder().encode(cvConstructor)
+                    item.cvConstructorData = updatedData as NSData
+                }
+                
+                try context.save()
+                print("Cover letter changes updated successfully.")
+            } else {
+                let newItem = CoverLetterItem(context: context)
+                newItem.id = id
+                newItem.fullName = selectedCV.fullName
+                newItem.jobTitle = selectedCV.jobTitle
+                newItem.creationDate = selectedCV.creationDate
+                newItem.filePath = selectedCV.filePath
+                 
+                let cvConstructor = CVConstructor(
+                    firstname: firstname,
+                    lastname: lastname,
+                    email: email,
+                    phone: phone,
+                    summary: summary,
+                    jobTitle: jobTitle,
+                    site: site,
+                    location: "",
+                    workExperience: [],
+                    education: [],
+                    skills: [],
+                    languages: [],
+                    profileImagePath: nil
+                )
+                let encodedData = try JSONEncoder().encode(cvConstructor)
+                newItem.cvConstructorData = encodedData as NSData
+                
+                try context.save()
+                print("New CoverLetterItem created and saved successfully.")
+            }
+        } catch {
+            print("Error updating CoverLetterItem: \(error)")
+        }
     }
     
     func showPaywall() {
@@ -27,26 +151,14 @@ final class CoverLetterViewModel: ObservableObject {
         coordinator.showResumeTemplates()
     }
     
-    func openResultView(historyItem: HistoryItem) {
-        coordinator.showHistoryItem(historyItem: historyItem)
-    }
-    
     func backTapped() {
         coordinator.popView()
     }
+
     
-    func fetchHistory() {
-        Task {
-            let items = HistoryItemRepository.shared.fetchAll()
-            await MainActor.run {
-                self.historyItems = items
-            }
-        }
-    }
-    
-    func deleteItem(_ item: HistoryItem) {
-        HistoryItemRepository.shared.delete(item)
-        fetchHistory()
+    func deleteItem(_ item: CoverLetterItem) {
+        HistoryItemRepository.shared.deleteCoverLetterItem(item)
+        objectWillChange.send()
     }
 }
 

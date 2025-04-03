@@ -5,18 +5,12 @@ struct HistoryView: View {
     
     var body: some View {
         VStack {
-            if viewModel.isFromPush {
-                BackButtonBar(showProIcon: $viewModel.showProIcon) {
-                    viewModel.backTapped()
-                } action: {
-                    viewModel.showPaywall()
-                }
-            } else {
-                NavBar(showProIcon: $viewModel.showProIcon) {
-                    viewModel.showPaywall()
-                }
-                .padding(.horizontal, 16)
+            BackButtonBar(showProIcon: $viewModel.showProIcon) {
+                viewModel.backTapped()
+            } action: {
+                viewModel.showPaywall()
             }
+            
             
             ScrollView {
                 HStack {
@@ -30,22 +24,23 @@ struct HistoryView: View {
                 .padding(.horizontal, 16)
                 
                 VStack(spacing: 0) {
-                    
-                    if viewModel.historyItems.isEmpty {
-                        VStack(spacing: 16) {
-                            emptyStateView
+                    VStack(spacing: 8) {
+                        ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
+                            cvCard(item: item, index: index)
                         }
-                    } else {
-                        VStack(spacing: 8) {
-                            ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
-                                cvCard(item: item, index: index)
-                            }
-                            
-                            Spacer(minLength: 50)
-                        }
+                        
+                        Spacer(minLength: 50)
+                        
                     }
                 }
                 .padding(.horizontal, 16)
+            }
+            .overlay {
+                if viewModel.historyItems.isEmpty {
+                    VStack(spacing: 16) {
+                        emptyStateView
+                    }
+                }
             }
         }
     }
@@ -68,12 +63,12 @@ struct HistoryView: View {
                 
                 HStack(alignment: .top, spacing: 0) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(item.jobTitle ?? "Untitled")
+                        Text(item.jobTitle ?? R.string.localizable.untitled())
                             .font(Font(R.font.figtreeSemiBold(size: 20)!))
                             .foregroundColor(textColor(for: index))
                         
                         HStack {
-                            Text(item.fullName ?? "Unnamed")
+                            Text(item.fullName ?? R.string.localizable.unnamed())
                                 .font(Font(R.font.figtreeRegular(size: 16)!))
                                 .foregroundColor(textColor(for: index))
                             
@@ -88,6 +83,7 @@ struct HistoryView: View {
                     
                     Menu {
                         Button {
+                            
                         } label: {
                             Text(R.string.localizable.edit)
                                 .font(.system(size: 17))
@@ -98,7 +94,7 @@ struct HistoryView: View {
                         Button {
                             // Rename action here.
                         } label: {
-                            Text("Rename")
+                            Text(R.string.localizable.rename)
                                 .font(.system(size: 17))
                                 .foregroundColor(.black)
                             Image(systemName: "square.and.arrow.up")
@@ -107,7 +103,7 @@ struct HistoryView: View {
                         Button(role: .destructive) {
                             viewModel.deleteItem(item)
                         } label: {
-                            Text("Delete")
+                            Text(R.string.localizable.delete())
                                 .font(.system(size: 17))
                                 .foregroundColor(.black)
                             Image(systemName: "trash")
@@ -115,7 +111,7 @@ struct HistoryView: View {
                         
                     } label: {
                         Circle()
-                            .fill(Color.white)
+                            .fill(menuColor(for: index))
                             .frame(width: 60, height: 60)
                             .overlay(
                                 Image(.moreV)
@@ -123,7 +119,7 @@ struct HistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(dotsColor(for: index))
                             )
                     }
                     .frame(alignment: .trailing)
@@ -136,8 +132,8 @@ struct HistoryView: View {
     private func fillColor(for index: Int) -> Color {
         switch index % 3 {
         case 2:
-            return Color(.cD9D9D9)
-
+            return Color(.c393939)
+            
         case 1:
             return Color(.cE1FF41)
         case 0:
@@ -165,6 +161,15 @@ struct HistoryView: View {
         }
     }
     
+    private func dotsColor(for index: Int) -> Color {
+        switch index % 3 {
+        case 2:
+            return  Color(.white)
+        default:
+            return Color(.blackMain)
+        }
+    }
+    
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy, HH:mm"
@@ -177,95 +182,41 @@ struct HistoryView: View {
             Circle().fill(.gray.opacity(0.6))
                 .frame(width: 120, height: 120)
                 .overlay {
-                    Image(systemName: "doc.text.fill")
+                    Image(.noHistory)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 60, height: 60)
+                        .frame(width: 80, height: 78.33)
                 }
             
-            Text("It's empty here yet")
-                .font(.system(size: 20))
+            Text(R.string.localizable.itSEmptyHereYet)
+                .font(Font(R.font.figtreeRegular.callAsFunction(size: 20)!))
                 .padding(.top, 16)
             
-            Text("Create your first resume!")
-                .font(.system(size: 16))
-                .foregroundStyle(.gray)
+            Text(R.string.localizable.cxde)
+                .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                .foregroundStyle(.cA1A1A1)
                 .padding(.top, 8)
             
             Button {
                 viewModel.showResumeTemplates()
             } label: {
-                Text("Create")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.black)
+                Text(R.string.localizable.create())
+                    .font(Font(R.font.figtreeSemiBold(size: 20)!))
+                    .foregroundColor(.blackMain)
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
-                    .background(Color.yellow)
+                    .background(Color.cE1FF41)
                     .clipShape(RoundedRectangle(cornerRadius: 32))
                     .contentShape(Rectangle())
             }
+            .buttonStyle(ScaleButtonStyle())
             .padding(.top, 20)
         }
     }
 }
-import SwiftUI
 
-struct AngledNotchCardShape: Shape {
-    let cornerRadius: CGFloat
-    
-    let topAngleInset: CGFloat
-    
-    let topAngleHeight: CGFloat
-    
-    let centerWidth: CGFloat
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        
-        let totalTopWidth = rect.width - 2 * (cornerRadius + topAngleInset)
-        let angledSegmentWidth = (totalTopWidth - centerWidth) / 2
-        path.move(to: CGPoint(x: 0, y: cornerRadius))
-        path.addQuadCurve(
-            to: CGPoint(x: cornerRadius, y: 0),
-            control: CGPoint(x: 0, y: 0)
-        )
-        
-        let leftInsetEndX = cornerRadius + topAngleInset
-        path.addLine(to: CGPoint(x: leftInsetEndX + 80, y: 0))
-        
-        let leftAngleEndX = leftInsetEndX + angledSegmentWidth
-        path.addLine(to: CGPoint(x: leftAngleEndX, y: topAngleHeight))
-        
-        path.addLine(to: CGPoint(x: leftAngleEndX + centerWidth, y: topAngleHeight))
-        
-        let rightAngleStartX = leftAngleEndX + centerWidth
-        let rightInsetStartX = rightAngleStartX + angledSegmentWidth
-        path.addLine(to: CGPoint(x: rightInsetStartX - 80, y: 0))
-        
-        let topRightArcStartX = rect.width - cornerRadius
-        path.addLine(to: CGPoint(x: topRightArcStartX, y: 0))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.width, y: cornerRadius),
-            control: CGPoint(x: rect.width, y: 0)
-        )
-        
-        path.addLine(to: CGPoint(x: rect.width, y: rect.height - cornerRadius))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.width - cornerRadius, y: rect.height),
-            control: CGPoint(x: rect.width, y: rect.height)
-        )
-        
-        path.addLine(to: CGPoint(x: cornerRadius, y: rect.height))
-        path.addQuadCurve(
-            to: CGPoint(x: 0, y: rect.height - cornerRadius),
-            control: CGPoint(x: 0, y: rect.height)
-        )
-        
-        path.closeSubpath()
-        return path
-    }
-}
+
 
 #Preview {
-    HistoryView(viewModel: .init(coordinator: .init(), isFromPush: false))
+    HistoryView(viewModel: .init(coordinator: .init()))
 }

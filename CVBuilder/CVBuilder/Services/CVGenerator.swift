@@ -3175,6 +3175,390 @@ struct CVGenerator {
         return exportPDF(document: pdfDoc, cvConstructor: cvConstructor)
     }
     
+    private func generateCoverLetter(cvConstructor: CVConstructor) -> (doc: PDFDocument, fileData: Data, previewImage: Image)? {
+        var inity = cvConstructor
+        let workArray: [WorkExperienceInput] = inity.workExperience.reversed().map { input in
+            return WorkExperienceInput(
+                workStartedDate: input.workStartedDate,
+                workEndedDate: input.workEndedDate,
+                speciality: input.speciality,
+                companyName: input.companyName,
+                country: input.country,
+                jobDescirption: input.jobDescirption
+            )
+        }
+        
+        let educationArray: [EducationInput] = inity.education.reversed().map { input in
+            EducationInput(
+                startedDate: input.startedDate,
+                endedDate: input.endedDate,
+                education: input.education,
+                description: input.description
+            )
+        }.suffix(3)
+        
+        
+        inity.workExperience = workArray
+        inity.education = educationArray
+        
+        guard let url = Bundle.main.url(forResource: R.file.template8Pdf.name, withExtension: "pdf"),
+              let pdfDoc = PDFDocument(url: url) else {
+            print("Could not load  pdf from bundle.")
+            return nil
+        }
+        
+        guard let page = pdfDoc.page(at: 0) else {
+            print("No pages found in PDF.")
+            return nil
+        }
+        
+        let nameAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 190,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 51,
+                            elementHeight: 200,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 400,
+                           height: 200),
+            forType: .freeText,
+            withProperties: nil
+        )
+        nameAnnotation.contents = inity.firstname + " " + inity.lastname + ",  " + inity.jobTitle
+        nameAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 40)!
+        nameAnnotation.fontColor = .blackMain
+        nameAnnotation.backgroundColor = .clear
+        nameAnnotation.color = .clear
+        page.addAnnotation(nameAnnotation)
+        
+        let contactsAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 24,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 54,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 180,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        contactsAnnotation.contents = "Contacts"
+        contactsAnnotation.font = R.font.konstantGroteskBook(size: 15)!
+        contactsAnnotation.fontColor = .blackMain
+        contactsAnnotation.backgroundColor = .clear
+        contactsAnnotation.color = .clear
+        page.addAnnotation(contactsAnnotation)
+        
+        let locationAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 24,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 90,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 160,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        locationAnnotation.contents = inity.site
+        locationAnnotation.font = R.font.konstantGroteskBook(size: 9)!
+        locationAnnotation.fontColor = .blackMain
+        locationAnnotation.backgroundColor = .clear
+        locationAnnotation.color = .clear
+        page.addAnnotation(locationAnnotation)
+        
+        
+        let phoneAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 24,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 120,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 200,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        phoneAnnotation.contents = inity.email
+        phoneAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9)!
+        phoneAnnotation.fontColor = .blackMain
+        phoneAnnotation.backgroundColor = .clear
+        phoneAnnotation.color = .clear
+        page.addAnnotation(phoneAnnotation)
+        
+        let emailAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 24,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 140,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 300,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        emailAnnotation.contents = inity.phone
+        emailAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9 )!
+        emailAnnotation.fontColor = .blackMain
+        emailAnnotation.backgroundColor = .clear
+        emailAnnotation.color = .clear
+        page.addAnnotation(emailAnnotation)
+        
+        
+        
+        let skillsTitleAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 402,
+                           y: cvBuilder.convertYCoordinate(top: 190.0, elementHeight: 30, pageHeight: cvBuilder.pageSize.height),
+                           width: 430, height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        skillsTitleAnnotation.contents = "Skills"
+        skillsTitleAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 15)!
+        skillsTitleAnnotation.fontColor = .blackMain
+        skillsTitleAnnotation.backgroundColor = .clear
+        skillsTitleAnnotation.color = .clear
+        page.addAnnotation(skillsTitleAnnotation)
+        
+        let skillsBaseY: CGFloat = 40.0
+        let skillsSpacing: CGFloat = 85.0
+        let skillsBoxHeight: CGFloat = 70.0
+        
+        let yPosition = cvBuilder.convertYCoordinate(
+            top: skillsBaseY,
+            elementHeight: skillsBoxHeight,
+            pageHeight: cvBuilder.pageSize.height
+        )
+        
+        let ylPosition = cvBuilder.convertYCoordinate(
+            top: skillsBaseY,
+            elementHeight: skillsBoxHeight,
+            pageHeight: cvBuilder.pageSize.height
+        )
+        
+        let skillsDescAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 420, y: cvBuilder.convertYCoordinate(top: 390, elementHeight: 150, pageHeight: cvBuilder.pageSize.height), width: 150, height: 300),
+            forType: .freeText,
+            withProperties: nil
+        )
+        let combined = inity.skills
+            .flatMap { $0.description.components(separatedBy: ",") }
+            .map { SkillInput(description: $0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+            .map { $0.description }.joined(separator: ", ")
+        skillsDescAnnotation.contents = combined
+        skillsDescAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9)!
+        skillsDescAnnotation.fontColor = .blackMain
+        skillsDescAnnotation.backgroundColor = .clear
+        skillsDescAnnotation.color = .clear
+        page.addAnnotation(skillsDescAnnotation)
+        
+        
+        let yllPosition = cvBuilder.convertYCoordinate(
+            top: 460,
+            elementHeight: skillsBoxHeight,
+            pageHeight: cvBuilder.pageSize.height
+        )
+        
+        let langTitleAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 402, y: yllPosition, width: 200, height: 20),
+            forType: .freeText,
+            withProperties: nil
+        )
+        langTitleAnnotation.contents = "Languages"
+        langTitleAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 15)!
+        langTitleAnnotation.fontColor = .blackMain
+        langTitleAnnotation.backgroundColor = .clear
+        langTitleAnnotation.color = .clear
+        page.addAnnotation(langTitleAnnotation)
+        
+        
+        let ylllPosition = cvBuilder.convertYCoordinate(
+            top: 640,
+            elementHeight: skillsBoxHeight,
+            pageHeight: cvBuilder.pageSize.height
+        )
+        let langDescriptionAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 420, y: ylllPosition , width: 150, height: 150),
+            forType: .freeText,
+            withProperties: nil
+        )
+        
+        
+        langDescriptionAnnotation.contents = inity.languages
+            .flatMap { $0.name.components(separatedBy: ",") }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .joined(separator: ", ")
+        langDescriptionAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9)!
+        langDescriptionAnnotation.fontColor = .blackMain
+        langDescriptionAnnotation.backgroundColor = .clear
+        langDescriptionAnnotation.color = .clear
+        page.addAnnotation(langDescriptionAnnotation)
+        
+        let workExperienceTitleAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 190,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 190,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 430,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        
+        workExperienceTitleAnnotation.contents = "Experience"
+        workExperienceTitleAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 14)!
+        workExperienceTitleAnnotation.fontColor = .blackMain
+        workExperienceTitleAnnotation.backgroundColor = .clear
+        workExperienceTitleAnnotation.color = .clear
+        page.addAnnotation(workExperienceTitleAnnotation)
+        
+        let baseY: CGFloat = 50.0
+        let verticalSpacing: CGFloat = 120.0
+        for (index, work) in inity.workExperience.enumerated() {
+            let yPosition = cvBuilder.convertYCoordinate(
+                top: baseY + CGFloat(index) * verticalSpacing,
+                elementHeight: 190,
+                pageHeight: cvBuilder.pageSize.height
+            )
+            
+            let jobNameAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition - 20, width: 200, height: 20),
+                forType: .freeText,
+                withProperties: nil
+            )
+            jobNameAnnotation.contents = work.companyName
+            jobNameAnnotation.font = R.font.inter24ptMedium.callAsFunction(size: 12)!
+            jobNameAnnotation.fontColor = .blackMain
+            jobNameAnnotation.backgroundColor = .clear
+            jobNameAnnotation.color = .clear
+            page.addAnnotation(jobNameAnnotation)
+            
+            
+            let periodAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition, width: 200, height: 20),
+                forType: .freeText,
+                withProperties: nil
+            )
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM yyyy"
+            let startDate = formatter.string(from: work.workStartedDate)
+            let endDate = formatter.string(from: work.workEndedDate)
+            periodAnnotation.contents = "\(startDate) - \(endDate)"
+            periodAnnotation.font = R.font.inter24ptRegular.callAsFunction(size: 8)!
+            periodAnnotation.fontColor = .blackMain
+            periodAnnotation.backgroundColor = .clear
+            periodAnnotation.color = .clear
+            page.addAnnotation(periodAnnotation)
+            
+            
+            let locationAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 340, y: yPosition , width: 200, height: 20),
+                forType: .freeText,
+                withProperties: nil
+            )
+            locationAnnotation.contents = work.country
+            locationAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 8)!
+            locationAnnotation.fontColor = .blackMain
+            locationAnnotation.backgroundColor = .clear
+            locationAnnotation.color = .clear
+            page.addAnnotation(locationAnnotation)
+            
+            
+            let leftDutiesAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition - 110, width: 200, height: 90),
+                forType: .freeText,
+                withProperties: nil
+            )
+            leftDutiesAnnotation.contents = work.jobDescirption
+            leftDutiesAnnotation.font = R.font.inter24ptRegular.callAsFunction(size: 9)!
+            leftDutiesAnnotation.fontColor = .blackMain
+            leftDutiesAnnotation.backgroundColor = .clear
+            leftDutiesAnnotation.color = .clear
+            page.addAnnotation(leftDutiesAnnotation)
+        }
+        
+        
+        let educationTitleAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 190,
+                           y: cvBuilder.convertYCoordinate(top: 700, elementHeight: 30, pageHeight: cvBuilder.pageSize.height),
+                           width: 430,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        educationTitleAnnotation.contents = "Education"
+        educationTitleAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 14)!
+        educationTitleAnnotation.fontColor = .blackMain
+        educationTitleAnnotation.backgroundColor = .clear
+        educationTitleAnnotation.color = .clear
+        page.addAnnotation(educationTitleAnnotation)
+        
+        let educationBaseY: CGFloat = 670
+        let educationSpacing: CGFloat = 55.0
+        let educationBoxHeight: CGFloat = 72.0
+        
+        for (index, edu) in inity.education.enumerated() {
+            
+            let yPosition = cvBuilder.convertYCoordinate(
+                top: educationBaseY + CGFloat(index) * educationSpacing,
+                elementHeight: educationBoxHeight,
+                pageHeight: cvBuilder.pageSize.height
+            )
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM yyyy"
+            let startDate = formatter.string(from: edu.startedDate)
+            let endDate = formatter.string(from: edu.endedDate)
+            
+            let dateAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition, width: 200, height: 20),
+                forType: .freeText,
+                withProperties: nil
+            )
+            dateAnnotation.contents = "\(startDate) - \(endDate)"
+            dateAnnotation.font = R.font.inter24ptRegular.callAsFunction(size: 8)!
+            dateAnnotation.fontColor = .blackMain
+            dateAnnotation.backgroundColor = .clear
+            dateAnnotation.color = .clear
+            page.addAnnotation(dateAnnotation)
+            
+            
+            let educationNameAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition - 14, width: 200, height: 20),
+                forType: .freeText,
+                withProperties: nil
+            )
+            educationNameAnnotation.contents = edu.education
+            educationNameAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 11)!
+            educationNameAnnotation.fontColor = .blackMain
+            educationNameAnnotation.backgroundColor = .clear
+            educationNameAnnotation.color = .clear
+            page.addAnnotation(educationNameAnnotation)
+            
+            let descriptionAnnotation = PDFAnnotation(
+                bounds: CGRect(x: 190, y: yPosition - 42, width: 350, height: 30),
+                forType: .freeText,
+                withProperties: nil
+            )
+            descriptionAnnotation.contents = edu.description
+            descriptionAnnotation.font = R.font.konstantGroteskBook(size: 10)!
+            descriptionAnnotation.fontColor = .blackMain
+            descriptionAnnotation.backgroundColor = .clear
+            descriptionAnnotation.color = .clear
+            page.addAnnotation(descriptionAnnotation)
+        }
+        
+        
+        return exportPDF(document: pdfDoc, cvConstructor: cvConstructor)
+    }
+    
+    
     
     private func exportPDF(document: PDFDocument, cvConstructor: CVConstructor) -> (doc: PDFDocument, fileData: Data, previewImage: Image)? {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("myCV.pdf")

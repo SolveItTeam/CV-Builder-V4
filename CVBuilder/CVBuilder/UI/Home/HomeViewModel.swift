@@ -1,12 +1,13 @@
 import SwiftUI
-
+import Combine
 
 final class HomeViewModel: ObservableObject {
     @Published var showProIcon: Bool
+    @Published var repository: HistoryItemRepository = .shared
     @Published var historyItems: [HistoryItem] = []
     
     private let coordinator: Coordinator
-    
+    private var cancellables = Set<AnyCancellable>()
     private let purchaseManager: PurchaseManager = .shared
     
     init(coordinator: Coordinator) {
@@ -18,7 +19,10 @@ final class HomeViewModel: ObservableObject {
             .map { !$0 }
             .assign(to: &$showProIcon)
         
-        fetchHistory()
+        repository.$historyItems
+            .assign(to: \.historyItems, on: self)
+            .store(in: &cancellables)
+         
     }
     
     func showPaywall() {
@@ -43,17 +47,8 @@ final class HomeViewModel: ObservableObject {
     }
     
     
-    func fetchHistory() {
-        Task {
-            let items = HistoryItemRepository.shared.fetchAll()
-            await MainActor.run {
-                self.historyItems = items
-            }
-        }
-    }
-    
     func deleteItem(_ item: HistoryItem) {
-        HistoryItemRepository.shared.delete(item)
-        fetchHistory()
+        HistoryItemRepository.shared.deleteHistoryItem(item)
+        objectWillChange.send()
     }
 }

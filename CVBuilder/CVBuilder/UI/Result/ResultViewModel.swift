@@ -28,7 +28,7 @@ final class ResultViewModel: ObservableObject {
     let isResult: Bool
     let historyItem: HistoryItem?
      
-    private var historySaved: Bool = false
+    var historySaved: Bool = false
     
     init(coordinator: Coordinator,
          chosenTemplate: CVTemplate,
@@ -134,7 +134,7 @@ final class ResultViewModel: ObservableObject {
                     try data.write(to: fileURL)
                     guard let profile = keychain.user?.savedData else { return }
                     self.saveCVToHistory(jobTitle: self.obtainJobTitleFromData(), fullName: profile.firstname + " " + profile.lastname, fileURL: fileURL)
-                    self.historySaved = true
+                    self.historySaved = true  
                 } catch {
                     print("Error writing PDF: \(error)")
                 }
@@ -196,7 +196,10 @@ final class ResultViewModel: ObservableObject {
         HistoryItemRepository.shared.createHistoryItem(
             jobTitle: jobTitle,
             creationDate: creationDate, fullName: fullName,
-            filePath: fileName
+            filePath: fileName,
+            cvConstructor: keychain.user?.savedData
         )
+        
+        objectWillChange.send()
     }
 }

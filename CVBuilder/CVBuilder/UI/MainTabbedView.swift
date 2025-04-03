@@ -4,21 +4,34 @@ struct MainTabbedView: View {
     
     @State var selectedTab = 0
     let coordinator: Coordinator
+    @State var homeView: HomeView
+    @State var templatesView: PopularTemplatesView
+    @State var coverLetterView: CoverLetterView
+    @State var settingsView: SettingsView
     
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
                 HomeView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.home.rawValue)
-
+                    .tabItem {
+                        Image(.shareapp)
+                    }
                 PopularTemplatesView(viewModel: .init(coordinator: coordinator, isFromPush: false))
                     .tag(TabFlow.plus.rawValue)
-                
-                CoverLetterView(viewModel: .init(coordinator: coordinator, isFromPush: false))
+                    .tabItem {
+                        Image(.shareapp)
+                    }
+                CoverLetterView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.history.rawValue)
-                
+                    .tabItem {
+                        Image(.shareapp)
+                    }
                 SettingsView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.settings.rawValue)
+                    .tabItem {
+                        Image(.shareapp)
+                    }
             }
             .tint(.white)
             
@@ -28,14 +41,14 @@ struct MainTabbedView: View {
                         ForEach((TabFlow.allCases), id: \.self) { item in
                             Button{
                                 selectedTab = item.rawValue
-//                                
-//                                switch selectedTab {
-//                                case 1:
-//                                    coordinator.showProfileView()
-//                                    selectedTab = TabFlow.home.rawValue
-//                                default:
-//                                    break
-//                                }
+                                
+                                switch selectedTab {
+                                case 1:
+                                    coordinator.showProfileView()
+                                    selectedTab = TabFlow.home.rawValue
+                                default:
+                                    break
+                                }
                                
                             } label: {
                                 CustomTabItem(imageName: item.active, isActive: (selectedTab == item.rawValue), isPlusTab: item.rawValue == TabFlow.plus.rawValue)
@@ -71,8 +84,4 @@ extension MainTabbedView{
         .background(isPlusTab ? .cE1FF41 : isActive ? .cA1A1A1 : .c686868.opacity(0.3))
         .clipShape(Circle())
     }
-}
-
-#Preview {
-    MainTabbedView(coordinator: .init())
 }

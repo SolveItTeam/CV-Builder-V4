@@ -63,7 +63,6 @@ struct HomeView: View {
                             .frame(width: 14, height: 14)
                     }
                     .buttonStyle(CircularButton())
-                    
                 }
                 .padding(.top, 10) 
                  
@@ -121,12 +120,12 @@ struct HomeView: View {
                 
                 HStack(alignment: .top, spacing: 0) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(item.jobTitle ?? "Untitled")
+                        Text(item.jobTitle ?? R.string.localizable.untitled())
                             .font(Font(R.font.figtreeSemiBold(size: 20)!))
                             .foregroundColor(textColor(for: index))
                         
                         HStack {
-                            Text(item.fullName ?? "Unnamed")
+                            Text(item.fullName ?? R.string.localizable.unnamed())
                                 .font(Font(R.font.figtreeRegular(size: 16)!))
                                 .foregroundColor(textColor(for: index))
                             
@@ -141,6 +140,7 @@ struct HomeView: View {
                     
                     Menu {
                         Button {
+                            
                         } label: {
                             Text(R.string.localizable.edit)
                                 .font(.system(size: 17))
@@ -149,9 +149,10 @@ struct HomeView: View {
                         }
                         
                         Button {
+                            
                             // Rename action here.
                         } label: {
-                            Text("Rename")
+                            Text(R.string.localizable.rename)
                                 .font(.system(size: 17))
                                 .foregroundColor(.black)
                             Image(systemName: "square.and.arrow.up")
@@ -160,7 +161,7 @@ struct HomeView: View {
                         Button(role: .destructive) {
                             viewModel.deleteItem(item)
                         } label: {
-                            Text("Delete")
+                            Text(R.string.localizable.delete())
                                 .font(.system(size: 17))
                                 .foregroundColor(.black)
                             Image(systemName: "trash")
@@ -168,7 +169,7 @@ struct HomeView: View {
                         
                     } label: {
                         Circle()
-                            .fill(Color.white)
+                            .fill(menuColor(for: index))
                             .frame(width: 60, height: 60)
                             .overlay(
                                 Image(.moreV)
@@ -176,7 +177,7 @@ struct HomeView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(dotsColor(for: index))
                             )
                     }
                     .frame(alignment: .trailing)
@@ -185,11 +186,12 @@ struct HomeView: View {
             }
         }
     }
-    
+
     private func fillColor(for index: Int) -> Color {
         switch index % 3 {
         case 2:
-            return Color(.c686868)
+            return Color(.c393939)
+
         case 1:
             return Color(.cE1FF41)
         case 0:
@@ -208,13 +210,27 @@ struct HomeView: View {
         }
     }
     
+    private func menuColor(for index: Int) -> Color {
+        switch index % 3 {
+        case 2:
+            return Color(.c686868).opacity(0.3)
+        default:
+            return Color(.white)
+        }
+    }
+    
+    private func dotsColor(for index: Int) -> Color {
+        switch index % 3 {
+        case 2:
+            return  Color(.white)
+        default:
+            return Color(.blackMain)
+        }
+    }
+    
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy, HH:mm"
         return formatter.string(from: date)
     }
-}
-
-#Preview {
-    MainTabbedView(coordinator: .init())
 }

@@ -63,7 +63,14 @@ final class Coordinator: NSObject {
     
     func startMainFlow() {
         guard let window else { return }
-        let vc = UIHostingController(rootView: MainTabbedView(coordinator: self))
+        let vc = UIHostingController(rootView: MainTabbedView(
+            coordinator: self,
+            homeView: HomeView(viewModel: .init(coordinator: self)),
+            templatesView: PopularTemplatesView(viewModel: .init(coordinator: self, isFromPush: false)),
+            coverLetterView: CoverLetterView(viewModel: .init(coordinator: self)),
+            settingsView: SettingsView(viewModel: .init(coordinator: self))
+        ))
+        
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: { [weak self] in
             guard let self else { return }
             
@@ -117,7 +124,7 @@ final class Coordinator: NSObject {
     }
     
     func showResumeTemplates() {
-        let cvTemplate = PopularTemplatesView(viewModel: .init(coordinator: self, isFromPush: false))
+        let cvTemplate = PopularTemplatesView(viewModel: .init(coordinator: self, isFromPush: true))
         
         navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
     }
@@ -150,7 +157,7 @@ final class Coordinator: NSObject {
     }
     
     func showFullHistory() {
-        let historyVC = UIHostingController(rootView:  HistoryView(viewModel: .init(coordinator: self, isFromPush: true)))
+        let historyVC = UIHostingController(rootView:  HistoryView(viewModel: .init(coordinator: self)))
         navigationController.pushViewController(historyVC, animated: true)
         
     }

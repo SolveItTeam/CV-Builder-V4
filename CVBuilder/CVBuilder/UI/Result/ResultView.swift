@@ -71,6 +71,7 @@ struct ResultView: View {
                         viewModel.chosenTemplate = templatesList[new.index]
                         viewModel.currentIndex = new.index
                         viewModel.generateCV()
+                        viewModel.historySaved = false
                     }
                     .padding(.top, 10)
                     

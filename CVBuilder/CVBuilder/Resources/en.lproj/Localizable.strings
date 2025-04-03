@@ -101,10 +101,13 @@
 "Save template" = "Save template";
 "Exit without saving" = "Exit without saving";
 "Cancel" = "Cancel";
-"Сreate your cover letter now!" = "Сreate your cover letter now!";
+"Сreert" = "Сreate your cover letter now!";
+"crewesert" = "Сreate your cover letter now!";
 "Not Now" = "Not Now";
 "Select" = "Select";
 "Select your resume" = "Select your resume";
+"clr" = "Close Cover Letter?";
+"areyousurecl" = "Are you sure you want to close cover letter? All unsaved changes will be lost.";
 
 
 
@@ -143,13 +146,12 @@
 "Created" = "Created";
 "Rate App" = "Rate App";
 "Privacy Policy" = "Privacy Policy";
-"Terms of Use" = "Terms of Use";
-"Сreate your cover letter now" = "Сreate your cover letter now!";
+"Terms of Use" = "Terms of Use"; 
 "Unnamed" = "Unnamed";
 "Untitled" = "Untitled";
 "templates" = "Templates";
 "myCoverLetters" = "My Cover Letters";
-
+"rename" = "Rename";
 
 
 //MARK: - Errors
