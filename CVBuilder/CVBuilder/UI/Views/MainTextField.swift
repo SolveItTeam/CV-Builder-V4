@@ -145,8 +145,8 @@ struct MainTextEditor: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 48))
         .onChange(of: text) { newValue in
-            if newValue.count > 300 {
-                text = String(newValue.prefix(300))
+            if newValue.count > 600 {
+                text = String(newValue.prefix(600))
             }
         }
         .overlay {

@@ -1,107 +1,45 @@
 import SwiftUI
 
-struct HomeView: View {
-    @ObservedObject var viewModel: HomeViewModel
+struct CoverLetterView: View {
+    @ObservedObject var viewModel: HistoryViewModel
+    
     var body: some View {
         VStack {
             NavBar(showProIcon: $viewModel.showProIcon) {
                 viewModel.showPaywall()
             }
+            .padding(.horizontal, 16)
             
-            ScrollView(showsIndicators: false) {
+            ScrollView {
                 HStack {
-                    Text(R.string.localizable.popularTemplates)
-                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                    Text(R.string.localizable.myCoverLetters())
+                        .font(.system(size: 30))
                         .foregroundStyle(.white)
                     
                     Spacer()
-                    
-                    Button {
-                        viewModel.showResumeTemplates()
-                    } label: {
-                        Image(.right)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 14, height: 14)
-                    }
-                    .buttonStyle(CircularButton())
-                    
                 }
                 .padding(.top, 10)
+                .padding(.horizontal, 16)
                 
-                HStack(spacing: 16) {
-                    Button {
-                        viewModel.showPreview(cvtemplate: templatesList.first(where:  { $0.num == 2 }) ?? templatesList.first!)
-                    } label: {
-                        Image(.popularTemplates1)
-                            .resizable()
-                            .scaledToFit()
-                    }
-                    
-                    Button {
-                        viewModel.showPreview(cvtemplate: templatesList.first(where:  { $0.num == 4 }) ?? templatesList.first!)
-                    } label: {
-                        Image(.popularTemplates2)
-                            .resizable()
-                            .scaledToFit()
-                    }
-                }
-                
-                HStack {
-                    Text(R.string.localizable.myResumes)
-                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
-                        .foregroundStyle(.white)
-                    
-                    Spacer()
-                    
-                    Button {
-                        viewModel.showAllResumes()
-                    } label: {
-                        Image(.right)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 14, height: 14)
-                    }
-                    .buttonStyle(CircularButton())
-                    
-                }
-                .padding(.top, 10) 
-                 
-                if viewModel.historyItems.isEmpty {
-                    VStack(spacing: 0) {
-                        Circle().fill(.c393939.opacity(0.6))
-                            .frame(width: 120, height: 120)
-                            .overlay {
-                                Image(.noHistory)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 80, height: 78.33)
+                VStack(spacing: 0) {
+                    if viewModel.historyItems.isEmpty {
+                        VStack(spacing: 16) {
+                            emptyStateView
+                        }
+                    } else {
+                        VStack(spacing: 8) {
+                            ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
+                                cvCard(item: item, index: index)
                             }
-                        
-                        Text(R.string.localizable.itSEmptyHereYet)
-                            .font(Font(R.font.figtreeRegular.callAsFunction(size: 20)!))
-                            .padding(.top, 16)
-                        
-                        Text(R.string.localizable.cxde)
-                            .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
-                            .foregroundStyle(.cA1A1A1)
-                            .padding(.top, 8)
-                    }
-                } else {
-                    VStack(spacing: -50) {
-                        ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
-                            cvCard(item: item, index: index)
+                            
+                            Spacer(minLength: 50)
                         }
                     }
-            
                 }
-                
-                Spacer(minLength: 100)
+                .padding(.horizontal, 16)
             }
         }
-        .padding(.horizontal, 16)
     }
-    
     
     @ViewBuilder
     private func cvCard(item: HistoryItem, index: Int) -> some View {
@@ -121,12 +59,12 @@ struct HomeView: View {
                 
                 HStack(alignment: .top, spacing: 0) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(item.jobTitle ?? "Untitled")
+                        Text(item.jobTitle ?? R.string.localizable.untitled())
                             .font(Font(R.font.figtreeSemiBold(size: 20)!))
                             .foregroundColor(textColor(for: index))
                         
                         HStack {
-                            Text(item.fullName ?? "Unnamed")
+                            Text(item.fullName ?? R.string.localizable.unnamed())
                                 .font(Font(R.font.figtreeRegular(size: 16)!))
                                 .foregroundColor(textColor(for: index))
                             
@@ -187,34 +125,59 @@ struct HomeView: View {
     }
     
     private func fillColor(for index: Int) -> Color {
-        switch index % 3 {
-        case 2:
-            return Color(.c686868)
-        case 1:
-            return Color(.cE1FF41)
-        case 0:
-            return Color(.c3200E0)
-        default:
-            return Color.clear
-        }
+        return Color(.c686868).opacity(0.3)
     }
     
     private func textColor(for index: Int) -> Color {
-        switch index % 3 {
-        case 1:
-            return Color(.blackMain)
-        default:
-            return Color(.white)
-        }
+        return Color(.white)
     }
+    
+    private func menuColor(for index: Int) -> Color {
+        return Color(.c686868).opacity(0.3)
+    }
+    
     
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy, HH:mm"
         return formatter.string(from: date)
     }
-}
-
-#Preview {
-    MainTabbedView(coordinator: .init())
+    
+    @ViewBuilder
+    private var emptyStateView: some View {
+        VStack(spacing: 0) {
+                Circle().fill(.c393939.opacity(0.6))
+                    .frame(width: 120, height: 120)
+                    .overlay {
+                        Image(.noHistory)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 78.33)
+                    }
+                
+                Text(R.string.localizable.itSEmptyHereYet)
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 20)!))
+                    .padding(.top, 16)
+                
+                Text(R.string.localizable.cxde)
+                    .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                    .foregroundStyle(.cA1A1A1)
+                    .padding(.top, 8)
+            
+            
+            Button {
+                viewModel.showResumeTemplates()
+            } label: {
+                Text("Create")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(Color.yellow)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
+            }
+            .padding(.top, 20)
+        }
+    }
 }

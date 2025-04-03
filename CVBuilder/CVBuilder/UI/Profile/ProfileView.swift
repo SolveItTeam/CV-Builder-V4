@@ -44,9 +44,11 @@ struct ProfileView: View {
                         HStack {
                             ForEach(ProfileDataType.allCases, id: \.self) { dataType in
                                 Spacer()
-                                Button {
-                                    viewModel.profileData = dataType
-                                } label: {
+                                
+//                                Button {
+//                                        viewModel.profileData = dataType
+   
+//                                } label: {
                                     ZStack {
                                         Circle()
                                             .fill(viewModel.profileData == dataType ? .cE1FF41 : viewModel.profileData.index > dataType.index ? .clear : .c393939.opacity(0.3))
@@ -63,8 +65,9 @@ struct ProfileView: View {
                                             .frame(width: 20, height: 20)
                                             .foregroundColor(viewModel.profileData == dataType ? .c0A0A0A : viewModel.profileData.index >= dataType.index ? .white : .c686868)
                                     }
-                                }
-                                .buttonStyle(ScaleButtonStyle())
+//                                }
+//                                .buttonStyle(ScaleButtonStyle())
+                                
                                 Spacer()
                             }
                         }
@@ -102,10 +105,20 @@ struct ProfileView: View {
             }
             
             HStack(spacing: 14) {
-                
                 if viewModel.profileData != .skills {
                     Button {
-                        viewModel.popView()
+                        switch viewModel.profileData {
+                        case .profile:
+                            break
+                        case .contact:
+                            viewModel.profileData = .profile
+                        case .workExperience:
+                            viewModel.profileData = .workExperience
+                        case .education:
+                            viewModel.profileData = .education
+                        case .skills:
+                            break
+                        }
                     } label: {
                         Image(.left)
                             .resizable()
@@ -122,7 +135,6 @@ struct ProfileView: View {
                 }
                 
                 Button {
-                    
                     switch viewModel.profileData {
                     case .profile:
                         viewModel.profileData = .contact
@@ -133,7 +145,13 @@ struct ProfileView: View {
                     case .education:
                         viewModel.profileData = .skills
                     case .skills:
-                        viewModel.saveProfile()
+                        if let _ = viewModel.chosenTemplate, let completion = viewModel.resultCompletion {
+                            viewModel.saveProfile()
+                            completion()
+                        } else {
+                            viewModel.saveProfile()
+                            viewModel.dismiss()
+                        }
                     }
                 } label: {
                     if viewModel.profileData == .skills {
@@ -143,7 +161,8 @@ struct ProfileView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .background(.c393939)
+                        .foregroundStyle(viewModel.couldGoNext ? .blackMain : .cA1A1A1)
+                        .background(viewModel.couldGoNext ? .cE1FF41 : .c393939)
                         .clipShape(RoundedRectangle(cornerRadius: 32))
                         .contentShape(Rectangle())
                     } else {
@@ -151,13 +170,15 @@ struct ProfileView: View {
                             Text(R.string.localizable.next())
                                 .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
                             Image(.right)
+                                .renderingMode(.template)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 14, height: 14)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .background(.c393939)
+                        .foregroundStyle(viewModel.couldGoNext ? .blackMain : .cA1A1A1)
+                        .background(viewModel.couldGoNext ? .cE1FF41 : .c393939)
                         .clipShape(RoundedRectangle(cornerRadius: 32))
                         .contentShape(Rectangle())
                     }
@@ -170,12 +191,11 @@ struct ProfileView: View {
         .animation(.default, value: viewModel.profileData)
         .sheet(isPresented: $viewModel.showImagePicker) {
             ImagePicker(image: $viewModel.selectedImage)
-        }
-        
+        } 
         .sheet(isPresented: $viewModel.showWorkSheet) {
             WorkInputView(work: $viewModel.newWorkExperience) {
                 viewModel.workExperiences.append(viewModel.newWorkExperience)
-                viewModel.newWorkExperience = WorkExperienceInput(duties: [""])
+                viewModel.newWorkExperience = WorkExperienceInput()
                 viewModel.showWorkSheet = false
             }
             .presentationDetents([.fraction(0.985)])
@@ -242,10 +262,11 @@ struct ProfileView: View {
         }
         .alert(R.string.localizable.closeResume(), isPresented: $viewModel.isCloseResumeAlert, actions:  {
             Button(R.string.localizable.saveTemplate(), action: {
-                
+                viewModel.saveProfile()
+                viewModel.dismiss()
             })
             Button(R.string.localizable.exitWithoutSaving(), action: {
-                
+                viewModel.dismiss()
             })
             Button(R.string.localizable.cancel(), role: .cancel, action: {
                 
@@ -253,9 +274,6 @@ struct ProfileView: View {
         }, message: {
             Text(R.string.localizable.areYouSureYouWantToCloseResumeAllUnsavedChangesWillBeLost())
         })
-        .onDisappear {
-            viewModel.saveProfile()
-        }
     }
     
     @ViewBuilder private func profileInfoView() -> some View {
@@ -506,7 +524,7 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(viewModel: .init(coordinator: .init()))
+    ProfileView(viewModel: .init(coordinator: .init(), chosenTemplate: nil, resultCompletion: nil))
 }
 
 struct WorkInputView: View {
@@ -671,7 +689,7 @@ struct EducationInputView: View {
                         .focused($isKeyboardVisible, equals: .degree)
                     
                     
-                    MainTextField(placeholder: R.string.localizable.startOfEmployment(), text: $formattedStartedDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
+                    MainTextField(placeholder: R.string.localizable.startOfStudy(), text: $formattedStartedDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
                         .disabled(true)
                         .overlay {
                             DatePicker("", selection: $edu.startedDate, displayedComponents: .date)
@@ -687,7 +705,7 @@ struct EducationInputView: View {
                         .contentShape(Rectangle())
                     
                     
-                    MainTextField(placeholder: R.string.localizable.endOfEmployment(), text: $formattedEndDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
+                    MainTextField(placeholder: R.string.localizable.endOfStudy(), text: $formattedEndDate, color: .c686868, isFocused: $isKeyboardVisible, type: nil)
                         .disabled(true)
                         .overlay {
                             DatePicker("", selection: $edu.endedDate, displayedComponents: .date)

@@ -18,6 +18,7 @@
 "Create a resume that works for you. Professional, logical and stylish." = "Create a resume that works for you. Professional, logical and stylish.";
 "save" = "Save";
 "Support our growth,rate us!" = "Support our growth,\nrate us!";
+"Support our growth,rate us!" = "Support our growth,\nrate us!";
 "Express your appreciation by leaving a review on the App Store." = "Express your appreciation by leaving a review on the App Store.";
 "Create your resume faster!" = "Create your resume\nfaster!";
 "Your information is saved and automatically transferred to the new template." = "Your information is saved and automatically transferred to the new template.";
@@ -76,11 +77,14 @@
 "University name" = "University name";
 "Degree" = "Degree";
 "Start of Study" = "Start of Study";
+"End of Study" = "End of Study";
+"email" = "Email";
 "By continuing, you agree to:" = "By continuing, you agree to:";
 "Graduation" = "Graduation";
 "Still studying here" = "Still studying here";
 "Skills" = "Skills";
 "Add Skills" = "Add Skills";
+"employment" = "Employment";
 "Add Languages" = "Add Languages";
 "Close Resume?" = "Close Resume?";
 "then" = "then";
@@ -140,7 +144,11 @@
 "Rate App" = "Rate App";
 "Privacy Policy" = "Privacy Policy";
 "Terms of Use" = "Terms of Use";
-
+"Сreate your cover letter now" = "Сreate your cover letter now!";
+"Unnamed" = "Unnamed";
+"Untitled" = "Untitled";
+"templates" = "Templates";
+"myCoverLetters" = "My Cover Letters";
 
 
 

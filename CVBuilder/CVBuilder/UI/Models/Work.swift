@@ -27,7 +27,6 @@ struct Skills: Codable {
     var description: String
 }
 
-
 struct CVConstructor: Codable {
     var firstname: String
     var lastname: String
@@ -40,6 +39,8 @@ struct CVConstructor: Codable {
     var workExperience: [WorkExperienceInput]
     var education: [EducationInput]
     var skills: [SkillInput]
+    var languages: [Language]
+    var profileImagePath: String?
 }
 
 struct WorkExperienceInput: Identifiable, Hashable, Codable {
@@ -49,7 +50,6 @@ struct WorkExperienceInput: Identifiable, Hashable, Codable {
     var speciality: String = ""
     var companyName: String = ""
     var country: String = ""
-    var duties: [String] = []
     var stillWorkingHere: Bool = false
     var jobDescirption: String = ""
 }
@@ -69,7 +69,7 @@ struct SkillInput: Identifiable, Hashable, Codable {
     var description: String = ""
 }
 
-struct Language: Identifiable, Hashable {
+struct Language: Identifiable, Hashable, Codable  {
     var id = UUID()
     var name: String = ""
 }

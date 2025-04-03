@@ -1,5 +1,6 @@
 import SwiftUI
 import Reachability
+import PDFKit
 
 final class Coordinator: NSObject {
     @AppStorage(Constants.AppStorageKeys.isOnboardingCompleted) var isOnboardingCompleted: Bool = false
@@ -92,14 +93,31 @@ final class Coordinator: NSObject {
         window?.makeKeyAndVisible()
     }
     
-    func showProfileView() {
-        let profileCV = ProfileView(viewModel: .init(coordinator: self))
-        
-        navigationController.pushViewController((UIHostingController(rootView:  profileCV)), animated: true)
+    func showProfileView(chosenTemplate: CVTemplate? = nil) {
+        let viewModel: ProfileViewModel
+        if let chosenTemplate {
+            viewModel = ProfileViewModel(coordinator: self, chosenTemplate: chosenTemplate) { [weak self] in
+                guard let self else { return }
+                let resultViewModel = ResultViewModel(coordinator: self,
+                                                      chosenTemplate: chosenTemplate, isResult: false, historyItem: nil)
+                let resultView = ResultView(viewModel: resultViewModel)
+                
+                dismissSheet()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3 ) { [weak self] in 
+                    self?.navigationController.pushViewController(UIHostingController(rootView: resultView), animated: true)
+                }
+            }
+        } else {
+            viewModel = .init(coordinator: self, chosenTemplate: chosenTemplate, resultCompletion: nil)
+        }
+         let profileCV = (UIHostingController(rootView: ProfileView(viewModel: viewModel)))
+        profileCV.modalPresentationStyle = .fullScreen
+        navigationController.present(profileCV, animated: true)
     }
     
     func showResumeTemplates() {
-        let cvTemplate = PopularTemplatesView(viewModel: .init(coordinator: self))
+        let cvTemplate = PopularTemplatesView(viewModel: .init(coordinator: self, isFromPush: false))
         
         navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
     }
@@ -109,7 +127,12 @@ final class Coordinator: NSObject {
         
         navigationController.pushViewController((UIHostingController(rootView:  cvTemplate)), animated: true)
     }
-
+    
+    func showHistoryItem(historyItem: HistoryItem?) {
+        let resVC = UIHostingController(rootView:  ResultView(viewModel: .init(coordinator: self, chosenTemplate: .init(num: 0, templatePreview: .CV, fileToUseString: ""), isResult: true, historyItem: historyItem)))
+        
+        navigationController.pushViewController(resVC, animated: true)
+    }
 
     func showPaywall() {
         guard shouldShowPaywall, !isPaywallPresented else { return }
@@ -124,6 +147,12 @@ final class Coordinator: NSObject {
         navigationController.present(payWallViewController, animated: true) { [weak self] in
             self?.isPaywallPresented = false
         }
+    }
+    
+    func showFullHistory() {
+        let historyVC = UIHostingController(rootView:  HistoryView(viewModel: .init(coordinator: self, isFromPush: true)))
+        navigationController.pushViewController(historyVC, animated: true)
+        
     }
 }
 
@@ -186,12 +215,9 @@ extension Coordinator {
                 case .didEnterBackground:
                     break
                 case .willEnterForeground:
-                    
                     Task { [weak self] in
                         await self?.fetchAppConfigAndPurchases()
                     }
-                    
-                    
                 }
             }
             .store(in: cancelBag)

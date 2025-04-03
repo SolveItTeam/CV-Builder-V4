@@ -1,18 +1,15 @@
 import SwiftUI
 
-
-final class HistoryViewModel: ObservableObject {
+final class CoverLetterViewModel: ObservableObject {
     @Published var showProIcon: Bool
     @Published var historyItems: [HistoryItem] = []
     
     private let coordinator: Coordinator
     
     private let purchaseManager: PurchaseManager = .shared
-    let isFromPush: Bool
-    
-    init(coordinator: Coordinator, isFromPush: Bool) {
+ 
+    init(coordinator: Coordinator) {
         self.coordinator = coordinator
-        self.isFromPush = isFromPush
         showProIcon = !purchaseManager.isPremium
         
         purchaseManager.$isPremium
@@ -52,3 +49,4 @@ final class HistoryViewModel: ObservableObject {
         fetchHistory()
     }
 }
+

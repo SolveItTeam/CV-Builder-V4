@@ -25,4 +25,8 @@ final class TemplatePreviewViewModel: ObservableObject {
     func backTapped() {
         coordinator.popView()
     }
+    
+    func showProfile() {
+        coordinator.showProfileView(chosenTemplate: chosenTemplate)
+    }
 }

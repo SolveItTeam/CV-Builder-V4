@@ -24,6 +24,7 @@ struct TemplatePreviewView: View {
                 }
                 .padding(.top, 10)
                 .padding(.horizontal, 16)
+                
                 CarouselStack(
                     templatesList,
                     initialIndex: templatesList.firstIndex(where: { viewModel.chosenTemplate.fileToUseString == $0.fileToUseString })
@@ -45,7 +46,7 @@ struct TemplatePreviewView: View {
             }
             
             Button {
-                
+                viewModel.showProfile()
             } label: {
                     Text(R.string.localizable.create())
                         .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
@@ -67,7 +68,7 @@ struct TemplatePreviewView: View {
  
 
 #Preview {
-    TemplatePreviewView(viewModel: .init(coordinator: .init(), chosenTemplate: .init(templatePreview: .template1, fileToUseString: "template1.pdf")) )
+    TemplatePreviewView(viewModel: .init(coordinator: .init(), chosenTemplate: .init(num: 1, templatePreview: .template1, fileToUseString: "template1.pdf")) )
 }
 
 

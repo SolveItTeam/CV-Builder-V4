@@ -9,17 +9,25 @@ struct PopularTemplatesView: View {
     
     var body: some View {
         VStack {
-            BackButtonBar(showProIcon: $viewModel.showProIcon) {
-                viewModel.backTapped()
-            } action: {
-                viewModel.showPaywall()
+            
+            if viewModel.isFromPush {
+                BackButtonBar(showProIcon: $viewModel.showProIcon) {
+                    viewModel.backTapped()
+                } action: {
+                    viewModel.showPaywall()
+                }
+                .padding(.horizontal, 16)
+            } else {
+                NavBar(showProIcon: $viewModel.showProIcon) {
+                    viewModel.showPaywall()
+                }
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
             
             
             ScrollView {
                 HStack {
-                    Text(R.string.localizable.popularTemplates)
+                    Text(viewModel.isFromPush ? R.string.localizable.popularTemplates : R.string.localizable.templates)
                         .font(Font(R.font.figtreeRegular(size: 30)!))
                         .foregroundStyle(.white)
                     
@@ -32,20 +40,31 @@ struct PopularTemplatesView: View {
                         Button(action: {
                             viewModel.showPreview(cvtemplate: template)
                         }) {
-                                Image(template.templatePreview)
-                                    .resizable()
-                                    .scaledToFit()
+                            Image(template.templatePreview)
+                                .resizable()
+                                .scaledToFit()
+                                .overlay(alignment: .topTrailing ) {
+                                    if viewModel.showProIcon {
+                                        Image(.crown)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 24, height: 16)
+                                            .padding(10)
+                                    }
+                                }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .buttonStyle(ScaleButtonStyle())
                     }
                 }
                 .padding(.horizontal, 16)
+                
+                Spacer(minLength: 100)
             }
         }
     }
 }
 
 #Preview {
-    PopularTemplatesView(viewModel: .init(coordinator: .init()))
+    PopularTemplatesView(viewModel: .init(coordinator: .init(), isFromPush: false))
 }

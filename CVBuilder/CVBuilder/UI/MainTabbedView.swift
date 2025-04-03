@@ -11,8 +11,10 @@ struct MainTabbedView: View {
                 HomeView(viewModel: .init(coordinator: coordinator))
                     .tag(TabFlow.home.rawValue)
 
+                PopularTemplatesView(viewModel: .init(coordinator: coordinator, isFromPush: false))
+                    .tag(TabFlow.plus.rawValue)
                 
-                HistoryView(viewModel: .init(coordinator: coordinator))
+                CoverLetterView(viewModel: .init(coordinator: coordinator, isFromPush: false))
                     .tag(TabFlow.history.rawValue)
                 
                 SettingsView(viewModel: .init(coordinator: coordinator))
@@ -26,15 +28,14 @@ struct MainTabbedView: View {
                         ForEach((TabFlow.allCases), id: \.self) { item in
                             Button{
                                 selectedTab = item.rawValue
-                                
-                                switch selectedTab {
-                                case 1:
-                                    coordinator.showProfileView()
-                                case 2:
-                                    break
-                                default:
-                                    break
-                                }
+//                                
+//                                switch selectedTab {
+//                                case 1:
+//                                    coordinator.showProfileView()
+//                                    selectedTab = TabFlow.home.rawValue
+//                                default:
+//                                    break
+//                                }
                                
                             } label: {
                                 CustomTabItem(imageName: item.active, isActive: (selectedTab == item.rawValue), isPlusTab: item.rawValue == TabFlow.plus.rawValue)

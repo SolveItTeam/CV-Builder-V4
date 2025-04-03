@@ -1,5 +1,5 @@
 import SwiftUI
-
+import PDFKit
 
 final class ProfileViewModel: ObservableObject {
     @Published var profileData: ProfileDataType = .profile
@@ -28,14 +28,16 @@ final class ProfileViewModel: ObservableObject {
     @Published var newWorkExperience: WorkExperienceInput = WorkExperienceInput()
     @Published var newEducationExperience: EducationInput = EducationInput()
     @Published var languages: [Language] = []
+    @Published var chosenTemplate: CVTemplate?
     let keychain: KeychainService = .init()
+    private let generator: CVGenerator = .init()
     
     var couldGoNext: Bool {
         switch profileData {
         case .profile:
-            return !(firstname.isEmpty && lastname.isEmpty && jobTitle.isEmpty && summary.isEmpty)
+            return !firstname.isEmpty && !lastname.isEmpty && !jobTitle.isEmpty && !summary.isEmpty
         case .contact:
-            return !(email.isEmpty && phone.isEmpty && site.isEmpty && location.isEmpty)
+            return !email.isEmpty && !phone.isEmpty && !site.isEmpty && !location.isEmpty
         case .workExperience:
             return !workExperiences.isEmpty
         case .education:
@@ -52,14 +54,52 @@ final class ProfileViewModel: ObservableObject {
     @Published var selectedImage: UIImage? = nil
     @Published var showImagePicker: Bool = false
     
+    var resultCompletion: (() -> Void)?
     private let coordinator: Coordinator
     
-    init(coordinator: Coordinator) {
+    init(coordinator: Coordinator, chosenTemplate: CVTemplate?, resultCompletion: (() -> Void)?) {
         self.coordinator = coordinator
+        self.chosenTemplate = chosenTemplate
+        self.resultCompletion = resultCompletion
+        preloadData()
     }
     
-    func popView() {
-        coordinator.popView()
+    func preloadData() {
+        guard let user = keychain.user else { return }
+        let savedData = user.savedData
+        firstname = savedData.firstname
+        lastname = savedData.lastname
+        email = savedData.email
+        phone = savedData.phone
+        summary = savedData.summary
+        jobTitle = savedData.jobTitle
+        site = savedData.site
+        location = savedData.location
+        workExperiences = savedData.workExperience
+        educationExperiences = savedData.education
+        skills = savedData.skills
+        languages = savedData.languages
+        
+        if let imagePath = savedData.profileImagePath {
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let fileURL = documentsDirectory.appendingPathComponent(imagePath)
+            
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                if let loadedImage = UIImage(contentsOfFile: fileURL.path) {
+                    selectedImage = loadedImage
+                    previewImage = Image(uiImage: loadedImage)
+                    print("Loaded image from: \(fileURL.path)")
+                } else {
+                    print("Failed to load image data from: \(fileURL.path)")
+                }
+            } else {
+                print("No image found at: \(fileURL.path)")
+            }
+        }
+    }
+    
+    func dismiss() {
+        coordinator.dismissSheet()
     }
     
     func saveProfile() {
@@ -74,5 +114,23 @@ final class ProfileViewModel: ObservableObject {
         keychain.user?.savedData.workExperience = workExperiences
         keychain.user?.savedData.education = educationExperiences
         keychain.user?.savedData.skills = skills
+        keychain.user?.savedData.languages = languages
+        
+        saveImageToFileManager()
     }
+    
+    func saveImageToFileManager() {
+        guard let image = selectedImage, let imageData = image.pngData() else { return }
+        let fileName = "profileImage.png"  // Store only the file name
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        do {
+            try imageData.write(to: fileURL)
+            keychain.user?.savedData.profileImagePath = fileName // Save the file name instead of the absolute path
+            print("Image saved at: \(fileURL.path)")
+        } catch {
+            print("Error saving image: \(error)")
+        }
+    }
+    
 }
