@@ -112,10 +112,12 @@ struct MainTextEditor: View {
     let color: Color
     @FocusState.Binding var isFocused: FocusableField?
     let type: FocusableField?
-    init(placeholder: String, text: Binding<String>, color: Color = .c393939, isFocused: FocusState<FocusableField?>.Binding, type: FocusableField?) {
+    let maxLength: Int
+    init(placeholder: String, text: Binding<String>, color: Color = .c393939, isFocused: FocusState<FocusableField?>.Binding, type: FocusableField?, maxLength: Int = 300) {
         self.placeholder = placeholder
         _isFocused = isFocused
         self.type = type
+        self.maxLength = maxLength
         self.color = color
         _text = text
     }
@@ -145,8 +147,8 @@ struct MainTextEditor: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 48))
         .onChange(of: text) { newValue in
-            if newValue.count > 600 {
-                text = String(newValue.prefix(600))
+            if newValue.count > maxLength {
+                text = String(newValue.prefix(maxLength))
             }
         }
         .overlay {

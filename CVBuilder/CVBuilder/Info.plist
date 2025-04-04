@@ -6,29 +6,9 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Lato-Black.ttf</string>
-		<string>Lato-Bold.ttf</string>
-		<string>Lato-ExtraBold.ttf</string>
-		<string>Lato-Regular.ttf</string>
-		<string>SourceSansPro-Regular.otf</string>
-		<string>Lato-Medium.ttf</string>
 		<string>Figtree-Regular.ttf</string>
 		<string>Figtree-SemiBold.ttf</string>
 		<string>Figtree-Bold.ttf</string>
-		<string>Fraunces_72pt_Soft-Bold.ttf</string>
-		<string>Mulish-Bold.ttf</string>
-		<string>Mulish-Black.ttf</string>
-		<string>Mulish-Regular.ttf</string>
-		<string>AvenirLTStd-Medium.otf</string>
-		<string>AvenirLTStd-Black.otf</string>
-		<string>raleway.light.ttf</string>
-		<string>JosefinSans-Bold.ttf</string>
-		<string>Inter_24pt-Regular.ttf</string>
-		<string>Inter_24pt-Bold.ttf</string>
-		<string>Inter_24pt-Medium.ttf</string>
-		<string>Roboto_Condensed-Bold.ttf</string>
-		<string>Roboto_Condensed-Regular.ttf</string>
-		<string>KonstantGroteskBook.ttf</string>
 	</array>
 </dict>
 </plist>
