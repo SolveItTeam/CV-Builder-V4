@@ -106,7 +106,7 @@ final class Coordinator: NSObject {
             viewModel = ProfileViewModel(coordinator: self, chosenTemplate: chosenTemplate) { [weak self] in
                 guard let self else { return }
                 let resultViewModel = ResultViewModel(coordinator: self,
-                                                      chosenTemplate: chosenTemplate, isResult: false, historyItem: nil)
+                                                      chosenTemplate: chosenTemplate, isResult: false, historyItem: nil, cvConstructor: nil)
                 let resultView = ResultView(viewModel: resultViewModel)
                 
                 dismissSheet()
@@ -136,7 +136,7 @@ final class Coordinator: NSObject {
     }
     
     func showHistoryItem(historyItem: HistoryItem?) {
-        let resVC = UIHostingController(rootView:  ResultView(viewModel: .init(coordinator: self, chosenTemplate: .init(num: 0, templatePreview: .CV, fileToUseString: ""), isResult: true, historyItem: historyItem)))
+        let resVC = UIHostingController(rootView:  ResultView(viewModel: .init(coordinator: self, chosenTemplate: .init(num: 0, templatePreview: .CV, fileToUseString: ""), isResult: true, historyItem: historyItem, cvConstructor: nil)))
         
         navigationController.pushViewController(resVC, animated: true)
     }
@@ -159,7 +159,17 @@ final class Coordinator: NSObject {
     func showFullHistory() {
         let historyVC = UIHostingController(rootView:  HistoryView(viewModel: .init(coordinator: self)))
         navigationController.pushViewController(historyVC, animated: true)
+    }
+    
+    func showResultFromCover(cvConstructor: CVConstructor) {
         
+        let resultViewModel = ResultViewModel(coordinator: self,
+                                              chosenTemplate: templatesList.first!, isResult: false, historyItem: nil, isCover: true, cvConstructor: cvConstructor)
+        let resultView = UIHostingController(rootView: ResultView(viewModel: resultViewModel))
+        
+        
+        navigationController.pushViewController(resultView, animated: true)
+
     }
 }
 

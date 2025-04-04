@@ -37,7 +37,7 @@ struct MainTabbedView: View {
             
             VStack {
                 ZStack{
-                    HStack{
+                    HStack(spacing: 2) {
                         ForEach((TabFlow.allCases), id: \.self) { item in
                             Button{
                                 selectedTab = item.rawValue
@@ -55,14 +55,18 @@ struct MainTabbedView: View {
                             }
                         }
                     }
-                    .padding(6)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 2)
+                    
                 }
+                .frame(width: 343)
                 .background(.c393939)
                 .clipShape(RoundedRectangle(cornerRadius: 40))
-                .padding(.horizontal, 26)
-
+                .padding(.horizontal, 30)
             }
+            .frame(maxWidth: .infinity)
             .background(.c0A0A0A)
+            
         }
     }
 }

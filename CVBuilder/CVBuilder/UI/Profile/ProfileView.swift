@@ -44,11 +44,7 @@ struct ProfileView: View {
                         HStack {
                             ForEach(ProfileDataType.allCases, id: \.self) { dataType in
                                 Spacer()
-                                
-//                                Button {
-//                                        viewModel.profileData = dataType
-   
-//                                } label: {
+
                                     ZStack {
                                         Circle()
                                             .fill(viewModel.profileData == dataType ? .cE1FF41 : viewModel.profileData.index > dataType.index ? .clear : .c393939.opacity(0.3))
@@ -65,8 +61,6 @@ struct ProfileView: View {
                                             .frame(width: 20, height: 20)
                                             .foregroundColor(viewModel.profileData == dataType ? .c0A0A0A : viewModel.profileData.index >= dataType.index ? .white : .c686868)
                                     }
-//                                }
-//                                .buttonStyle(ScaleButtonStyle())
                                 
                                 Spacer()
                             }
@@ -398,7 +392,7 @@ struct ProfileView: View {
             }
             
             ForEach($viewModel.workExperiences, id: \.id) { $work in
-                SmallWorkView(work: $work, workExperiences: $viewModel.workExperiences, showWorkSheet: $viewModel.showWorkSheet)
+                SmallWorkView(work: $work, workExperiences: $viewModel.workExperiences)
             }
         }
         .transition(.move(edge: .trailing))
@@ -427,7 +421,7 @@ struct ProfileView: View {
             }
             
             ForEach($viewModel.educationExperiences, id: \.id) { $education in
-                SmallStudyView(study: $education, educationHistory: $viewModel.educationExperiences, showWorkSheet: $viewModel.showEducationSheet)
+                SmallStudyView(study: $education, educationHistory: $viewModel.educationExperiences)
             }
             
             
@@ -646,6 +640,13 @@ struct WorkInputView: View {
         }
         .padding(.horizontal, 16)
         .background(.c393939)
+        .onAppear {
+            if work.companyName != "" {
+    
+                formattedDate = work.workStartedDate.monthYearString
+                formattedEndDate = work.workEndedDate.monthYearString
+            }
+        }
     }
 }
 
@@ -760,6 +761,7 @@ struct EducationInputView: View {
         }
         .padding(.horizontal, 16)
         .background(.c393939)
+        
     }
 }
 
@@ -1005,7 +1007,7 @@ struct LanguagesInputView: View {
 struct SmallWorkView: View {
     @Binding var work: WorkExperienceInput
     @Binding var workExperiences: [WorkExperienceInput]
-    @Binding var showWorkSheet: Bool
+    @State var showInternalSheet: Bool = false
     
     var body: some View {
         HStack {
@@ -1027,7 +1029,7 @@ struct SmallWorkView: View {
             
             HStack(spacing: 6) {
                 Button {
-                    
+                    showInternalSheet = true
                 } label: {
                     Image(.edit)
                         .resizable()
@@ -1037,7 +1039,9 @@ struct SmallWorkView: View {
                 .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
                 
                 Button {
-                    
+                    if let index = workExperiences.firstIndex(where: { $0.id == work.id }) {
+                        workExperiences.remove(at: index)
+                    }
                 } label: {
                     Image(.trash)
                         .resizable()
@@ -1053,6 +1057,28 @@ struct SmallWorkView: View {
         .frame(height: 72)
         .background(.c393939)
         .clipShape(RoundedRectangle(cornerRadius: 40))
+        .sheet(isPresented: $showInternalSheet) {
+            WorkInputView(work: $work) {
+                if let index = workExperiences.firstIndex(where: { $0.id == work.id }) {
+                    workExperiences.remove(at: index)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    workExperiences.append(work)
+                    showInternalSheet = false
+                }
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1061,7 +1087,7 @@ struct SmallWorkView: View {
 struct SmallStudyView: View {
     @Binding var study: EducationInput
     @Binding var educationHistory: [EducationInput]
-    @Binding var showWorkSheet: Bool
+    @State var showStudySheet: Bool = false
     
     var body: some View {
         HStack {
@@ -1083,7 +1109,7 @@ struct SmallStudyView: View {
             
             HStack(spacing: 6) {
                 Button {
-                    
+                    showStudySheet = true
                 } label: {
                     Image(.edit)
                         .resizable()
@@ -1093,7 +1119,9 @@ struct SmallStudyView: View {
                 .buttonStyle(CircularButton(opacity: 0.6, color: .c686868))
                 
                 Button {
-                    
+                    if let index = educationHistory.firstIndex(where: { $0.id == study.id }) {
+                        educationHistory.remove(at: index)
+                    }
                 } label: {
                     Image(.trash)
                         .resizable()
@@ -1109,6 +1137,29 @@ struct SmallStudyView: View {
         .frame(height: 72)
         .background(.c393939)
         .clipShape(RoundedRectangle(cornerRadius: 40))
+        .sheet(isPresented: $showStudySheet) {
+            EducationInputView(edu: $study) {
+                if let index = educationHistory.firstIndex(where: { $0.id == study.id }) {
+                    educationHistory.remove(at: index)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    educationHistory.append(study)
+                    showStudySheet = false
+                }
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+        }
     }
 }
 

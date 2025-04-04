@@ -32,7 +32,6 @@ struct TemplatePreviewView: View {
                     Image(template.templatePreview)
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 457)
                         .cornerRadius(16)
                 }
                 .carouselScale(0.8)
@@ -41,6 +40,7 @@ struct TemplatePreviewView: View {
                     viewModel.chosenTemplate = templatesList[new.index]
                     viewModel.currentIndex = new.index
                 }
+                .padding(.horizontal, 16)
                 
                 TemplateDots(pageCount: templatesList.count, currentIndex: $viewModel.currentIndex)
             }

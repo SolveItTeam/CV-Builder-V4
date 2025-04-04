@@ -46,7 +46,7 @@ struct ResultView: View {
             .padding(.horizontal, 16)
             
             ScrollView {
-                if !viewModel.imagesForTemplates.isEmpty && !viewModel.isLoading && !viewModel.isResult {
+                if !viewModel.imagesForTemplates.isEmpty && !viewModel.isLoading && !viewModel.isResult  {
                     CarouselStack(
                         templatesList,
                         initialIndex: viewModel.currentIndex
@@ -55,7 +55,6 @@ struct ResultView: View {
                             image
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 457)
                                 .cornerRadius(16)
                         } else {
                             VStack {
@@ -74,8 +73,35 @@ struct ResultView: View {
                         viewModel.historySaved = false
                     }
                     .padding(.top, 10)
+                    .padding(.horizontal, 8)
                     
                     TemplateDots(pageCount: templatesList.count, currentIndex: $viewModel.currentIndex)
+                    
+                } else if viewModel.isCover {
+                    
+                    CarouselStack(
+                        [0, 1, 2],
+                        initialIndex: 0
+                    ) { template in
+                        if let image = viewModel.previewImage {
+                            image
+                                .resizable()
+                                .scaledToFit() 
+                                .cornerRadius(16)
+                        } else {
+                            VStack {
+                                
+                            }
+                            .frame(height: 457)
+                            .cornerRadius(16)
+                        }
+                    }
+                    .carouselScale(0.8)
+                    .carouselStyle(.infiniteScroll)
+                    .onCarousel { new in
+                    }
+                    .padding(.top, 10)
+                    .padding(.horizontal, 8)
                     
                 } else if viewModel.isResult {
                     
@@ -143,7 +169,9 @@ struct ResultView: View {
         })
         .task {
             if !viewModel.isResult {
-                viewModel.generateAllCVPreviews()
+                if !viewModel.isCover {
+                    viewModel.generateAllCVPreviews()
+                }
                 viewModel.generateCV()
             }
         }
@@ -163,6 +191,6 @@ struct ResultView: View {
 }
 
 #Preview {
-    ResultView(viewModel: .init(coordinator: .init(), chosenTemplate: .init(num: 1, templatePreview: .template1, fileToUseString: "template1.pdf"),  isResult: false, historyItem: nil))
+    ResultView(viewModel: .init(coordinator: .init(), chosenTemplate: .init(num: 1, templatePreview: .template1, fileToUseString: "template1.pdf"),  isResult: false, historyItem: nil, cvConstructor: nil))
 }
 

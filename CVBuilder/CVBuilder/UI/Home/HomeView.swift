@@ -37,14 +37,16 @@ struct HomeView: View {
                             .resizable()
                             .scaledToFit()
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                     
                     Button {
                         viewModel.showPreview(cvtemplate: templatesList.first(where:  { $0.num == 4 }) ?? templatesList.first!)
                     } label: {
                         Image(.popularTemplates2)
                             .resizable()
-                            .scaledToFit()
+                            .scaledToFit() 
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
                 
                 HStack {

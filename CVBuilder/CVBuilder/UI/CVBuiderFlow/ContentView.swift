@@ -236,9 +236,9 @@ struct ContentView: View {
  
  
     @State private var pdfDocument: PDFDocument = PDFDocument()
-    @State private var data: Data = Data()                           // Holds raw PDF data, if needed
-    @State private var previewImage: Image = Image(systemName: "doc")// For share preview
-    @State private var filename: String = "myCV"                     // The PDF's title / filename
+    @State private var data: Data = Data()
+    @State private var previewImage: Image = Image(systemName: "doc")
+    @State private var filename: String = "myCV"
     private let cvBuilder = ConstructHelper()
     
     private let maxWorkExperience = 4
@@ -256,15 +256,11 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                   
-                    
                     if pdfDocument.pageCount > 0 {
                         PDFKitRepresentedView(pdfDocument: pdfDocument)
                             .frame(minHeight: 600)
                     }
                     
-                    if pdfDocument.pageCount > 0 {
-                        
                         if pdfDocument.pageCount > 0 {
                             ShareLink(
                                 item: pdfDocument,
@@ -274,11 +270,7 @@ struct ContentView: View {
                                 )
                             )
                         }
-                        
-                        
                     }
-                }
-                
             }
             .padding()
             .sheet(isPresented: $showImagePicker) {
@@ -286,15 +278,13 @@ struct ContentView: View {
             }
             .task {
                 overlayTextOnСover(
-                    cv: inity
+                    cv: inity, companyName: "Solveit"
                 )
             }
         }
     }
     
-    
-    
-    private func overlayTextOnСover(cv: CVConstructor) {
+    private func overlayTextOnСover(cv: CVConstructor, companyName: String) {
         var inity = cv
         
         
@@ -310,67 +300,69 @@ struct ContentView: View {
         }
  
         let nameAnnotation = PDFAnnotation(
-            bounds: CGRect(x: 190,
+            bounds: CGRect(x: 31,
                            y: cvBuilder.convertYCoordinate(
-                            top: 51,
-                            elementHeight: 200,
+                            top: 34,
+                            elementHeight: 30,
                             pageHeight: cvBuilder.pageSize.height
                            ),
                            width: 400,
-                           height: 200),
+                           height: 30),
             forType: .freeText,
             withProperties: nil
         )
-        nameAnnotation.contents = inity.firstname + " " + inity.lastname + ",  " + inity.jobTitle
-        nameAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 40)!
-        nameAnnotation.fontColor = .white
+        nameAnnotation.contents = inity.firstname + " " + inity.lastname
+        nameAnnotation.font = R.font.inter24ptRegular(size: 12)!
+        nameAnnotation.fontColor = .blackMain
         nameAnnotation.backgroundColor = .clear
         nameAnnotation.color = .clear
         page.addAnnotation(nameAnnotation)
         
-        let contactsAnnotation = PDFAnnotation(
-            bounds: CGRect(x: 24,
+        let jobAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 31,
                            y: cvBuilder.convertYCoordinate(
-                            top: 54,
+                            top: 51,
                             elementHeight: 30,
                             pageHeight: cvBuilder.pageSize.height
                            ),
-                           width: 180,
+                           width: 400,
                            height: 30),
             forType: .freeText,
             withProperties: nil
         )
-        contactsAnnotation.contents = "Contacts"
-        contactsAnnotation.font = R.font.konstantGroteskBook(size: 15)!
-        contactsAnnotation.fontColor = .white
-        contactsAnnotation.backgroundColor = .clear
-        contactsAnnotation.color = .clear
-        page.addAnnotation(contactsAnnotation)
+        jobAnnotation.contents = inity.jobTitle
+        jobAnnotation.font = R.font.inter24ptRegular(size: 12)!
+        jobAnnotation.fontColor = .blackMain
+        jobAnnotation.backgroundColor = .clear
+        jobAnnotation.color = .clear
+        page.addAnnotation(jobAnnotation)
         
-        let locationAnnotation = PDFAnnotation(
-            bounds: CGRect(x: 24,
+        
+        let letterAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 60,
                            y: cvBuilder.convertYCoordinate(
-                            top: 90,
-                            elementHeight: 30,
+                            top: 218,
+                            elementHeight: 500,
                             pageHeight: cvBuilder.pageSize.height
                            ),
-                           width: 160,
-                           height: 30),
+                           width: 430,
+                           height: 500),
             forType: .freeText,
             withProperties: nil
         )
-        locationAnnotation.contents = inity.site
-        locationAnnotation.font = R.font.konstantGroteskBook(size: 9)!
-        locationAnnotation.fontColor = .white
-        locationAnnotation.backgroundColor = .clear
-        locationAnnotation.color = .clear
-        page.addAnnotation(locationAnnotation)
+        
+        letterAnnotation.contents = "Hello, \(companyName),\n\n\n\(inity.summary)\n\n\nAll the best,\n\(inity.firstname + " " + inity.lastname)"
+        letterAnnotation.font = R.font.inter24ptRegular(size: 12)!
+        letterAnnotation.fontColor = .blackMain
+        letterAnnotation.backgroundColor = .clear
+        letterAnnotation.color = .clear
+        page.addAnnotation(letterAnnotation)
         
         
-        let phoneAnnotation = PDFAnnotation(
-            bounds: CGRect(x: 24,
+        let siteAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 420,
                            y: cvBuilder.convertYCoordinate(
-                            top: 120,
+                            top: 760,
                             elementHeight: 30,
                             pageHeight: cvBuilder.pageSize.height
                            ),
@@ -379,17 +371,19 @@ struct ContentView: View {
             forType: .freeText,
             withProperties: nil
         )
-        phoneAnnotation.contents = inity.email
-        phoneAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9)!
-        phoneAnnotation.fontColor = .white
-        phoneAnnotation.backgroundColor = .clear
-        phoneAnnotation.color = .clear
-        page.addAnnotation(phoneAnnotation)
+        
+        siteAnnotation.contents = inity.site
+        siteAnnotation.font = R.font.inter24ptRegular(size: 12)!
+        siteAnnotation.fontColor = .blackMain
+        siteAnnotation.backgroundColor = .clear
+        siteAnnotation.color = .clear
+        page.addAnnotation(siteAnnotation)
+        
         
         let emailAnnotation = PDFAnnotation(
-            bounds: CGRect(x: 24,
+            bounds: CGRect(x: 420,
                            y: cvBuilder.convertYCoordinate(
-                            top: 140,
+                            top: 778,
                             elementHeight: 30,
                             pageHeight: cvBuilder.pageSize.height
                            ),
@@ -399,14 +393,31 @@ struct ContentView: View {
             withProperties: nil
         )
         emailAnnotation.contents = inity.phone
-        emailAnnotation.font = R.font.konstantGroteskBook.callAsFunction(size: 9 )!
-        emailAnnotation.fontColor = .white
+        emailAnnotation.font = R.font.inter24ptRegular.callAsFunction(size: 12)!
+        emailAnnotation.fontColor = .blackMain
         emailAnnotation.backgroundColor = .clear
         emailAnnotation.color = .clear
         page.addAnnotation(emailAnnotation)
- 
         
         
+        let phoneAnnotation = PDFAnnotation(
+            bounds: CGRect(x: 420,
+                           y: cvBuilder.convertYCoordinate(
+                            top: 796,
+                            elementHeight: 30,
+                            pageHeight: cvBuilder.pageSize.height
+                           ),
+                           width: 200,
+                           height: 30),
+            forType: .freeText,
+            withProperties: nil
+        )
+        phoneAnnotation.contents = inity.email
+        phoneAnnotation.font = R.font.inter24ptRegular.callAsFunction(size: 12)!
+        phoneAnnotation.fontColor = .blackMain
+        phoneAnnotation.backgroundColor = .clear
+        phoneAnnotation.color = .clear
+        page.addAnnotation(phoneAnnotation)
         
         self.pdfDocument = pdfDoc
         
@@ -3643,7 +3654,6 @@ class ImageStampAnnotation: PDFAnnotation {
         fatalError("init(coder:) has not been implemented")
     }
     
-    /// Draw the UIImage inside the annotation’s bounds
     override func draw(with box: PDFDisplayBox, in context: CGContext) {
         guard let cgImage = stampImage.cgImage else { return }
         

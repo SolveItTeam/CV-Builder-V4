@@ -4,6 +4,7 @@ struct CoverLetterView: View {
     @ObservedObject var viewModel: CoverLetterViewModel
     @State private var iscvHistoryPresented: Bool = false
     @State private var isFillCoverLetterPresented: Bool = false
+    @State private var isFillExternalCoverLetterPresented: Bool = false
     @FocusState private var isKeyboardVisible: FocusableField?
     
     var body: some View {
@@ -24,12 +25,13 @@ struct CoverLetterView: View {
                 .padding(.top, 10)
                 .padding(.horizontal, 16)
                 
-                VStack(spacing: 0) {
+                VStack(spacing: 8) {
                     ForEach(Array(viewModel.coverLetterItems.enumerated()), id: \.element.id) { index, item in
                         coverCard(item: item, index: index)
                     }
                     
                     Spacer(minLength: 50)
+                   
                     
                 }
                 .padding(.horizontal, 16)
@@ -42,12 +44,33 @@ struct CoverLetterView: View {
                     .padding(.horizontal, 16)
                 }
             }
+            
+            
+            Button {
+                iscvHistoryPresented = true
+            } label: {
+                Text(R.string.localizable.create())
+                    .font(Font(R.font.figtreeSemiBold(size: 20)!))
+                    .foregroundColor(.blackMain)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(Color.cE1FF41)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(ScaleButtonStyle())
+            .padding(.bottom, 40)
+            .padding(.horizontal, 16)
         }
         .sheet(isPresented: $iscvHistoryPresented) {
+            coverSheets()
+        }
+        
+        .sheet(isPresented: $isFillExternalCoverLetterPresented) {
             VStack {
                 HStack {
                     Button {
-                        iscvHistoryPresented = false
+                        viewModel.isCloseResumeAlert = true
                     } label: {
                         Image(.cross)
                             .resizable()
@@ -62,60 +85,62 @@ struct CoverLetterView: View {
                 }
                 
                 ScrollView {
-                    HStack {
-                        Text(R.string.localizable.selectYourResume)
-                            .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
-                            .foregroundStyle(.white)
+                    VStack(spacing: 8) {
+                        MainTextField(placeholder: R.string.localizable.firstName(),  text: $viewModel.firstname,  color: .c686868, isFocused: $isKeyboardVisible, type: .firstName)
+                            .id(FocusableField.firstName)
+                            .focused($isKeyboardVisible, equals: .firstName)
                         
-                        Spacer()
+                        MainTextField(placeholder: R.string.localizable.lastName(), text: $viewModel.lastname,  color: .c686868, isFocused: $isKeyboardVisible, type: .lastName)
+                            .id(FocusableField.lastName)
+                            .focused($isKeyboardVisible, equals: .lastName)
                         
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    VStack(spacing: 24) {
-                        ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
-                            cvCard(item: item, index: index)
-                        }
+                        MainTextField(placeholder: R.string.localizable.jobTitle(), text: $viewModel.jobTitle, color: .c686868, isFocused: $isKeyboardVisible, type: .jobTitle)
+                            .id(FocusableField.jobTitle)
+                            .focused($isKeyboardVisible, equals: .jobTitle)
+                        
+                        
+                        MainTextField(placeholder: R.string.localizable.companyName(), text: $viewModel.coverLetterCompanyName, color: .c686868, isFocused: $isKeyboardVisible, type: .companyName)
+                            .id(FocusableField.jobTitle)
+                            .focused($isKeyboardVisible, equals: .companyName)
+                        
+                        MainTextField(placeholder: R.string.localizable.mail(), text: $viewModel.email, color: .c686868, isFocused: $isKeyboardVisible, type: .email)
+                            .id(FocusableField.email)
+                            .focused($isKeyboardVisible, equals: .email)
+                        
+                        MainTextField(placeholder: R.string.localizable.phoneNumber(), text: $viewModel.phone, color: .c686868, isFocused: $isKeyboardVisible, type: .phone)
+                            .id(FocusableField.phone)
+                            .focused($isKeyboardVisible, equals: .phone)
+                        
+                        MainTextField(placeholder: R.string.localizable.site(), text: $viewModel.site, color: .c686868, isFocused: $isKeyboardVisible, type: .site)
+                            .id(FocusableField.site)
+                            .focused($isKeyboardVisible, equals: .site)
+                        
+                        MainTextEditor(placeholder: R.string.localizable.summary(), text: $viewModel.summary, color: .c686868, isFocused: $isKeyboardVisible, type: .summary)
+                            .id(FocusableField.summary)
+                            .focused($isKeyboardVisible, equals: .summary)
                     }
                 }
-                
-                VStack(spacing: 16) {
-                    Button {
-                        iscvHistoryPresented = false
-                    } label: {
-                        Text(R.string.localizable.notNow())
-                            .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                        
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 32)
-                                    .stroke(.cE1FF41, lineWidth: 1)
-                            }
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(ScaleButtonStyle())
-                    
-                    
-                    Button {
-                        isFillCoverLetterPresented = true
-                    } label: {
-                        Text(R.string.localizable.select())
-                            .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
-                            .foregroundStyle(viewModel.selectedCV != nil ? .blackMain : .cA1A1A1)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .background(viewModel.selectedCV != nil ? .cE1FF41 : .c686868)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
-                            .contentShape(Rectangle())
-                            .disabled(viewModel.selectedCV == nil)
-                    }
-                    .buttonStyle(ScaleButtonStyle())
-                }
-                .padding(.bottom, 8)
                 .padding(.horizontal, 16)
+                
+                Button {
+                    isFillExternalCoverLetterPresented = false
+                    viewModel.showResult()
+                } label: {
+                    Text(R.string.localizable.finish())
+                        .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                        .foregroundStyle(viewModel.couldGoNext ? .blackMain : .cA1A1A1)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(viewModel.couldGoNext ? .cE1FF41 : .c686868)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .contentShape(Rectangle())
+                        .disabled(!viewModel.couldGoNext)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.horizontal, 16)
+            }
+            .onAppear {
+                viewModel.prefill()
             }
             .presentationDetents([.fraction(0.985)])
             .presentationDragIndicator(.visible)
@@ -129,114 +154,31 @@ struct CoverLetterView: View {
                     }
                 }
             }
-            .sheet(isPresented: $isFillCoverLetterPresented) {
-                VStack {
-                    HStack {
-                        Button {
-                            viewModel.isCloseResumeAlert = true
-                        } label: {
-                            Image(.cross)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 10, height: 10)
-                        }
-                        .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
-                        .padding(.top, 20)
-                        .padding(.horizontal, 16)
-                        
-                        Spacer()
-                    }
+            .alert(R.string.localizable.clr(), isPresented: $viewModel.isCloseResumeAlert, actions:  {
+                Button(R.string.localizable.saveTemplate(), action: {
+                    viewModel.saveCoverLetterChanges()
+                    isFillExternalCoverLetterPresented = false
                     
-                    ScrollView {
-                        VStack(spacing: 8) {
-                            MainTextField(placeholder: R.string.localizable.firstName(),  text: $viewModel.firstname,  color: .c686868, isFocused: $isKeyboardVisible, type: .firstName)
-                                .id(FocusableField.firstName)
-                                .focused($isKeyboardVisible, equals: .firstName)
-                            
-                            MainTextField(placeholder: R.string.localizable.lastName(), text: $viewModel.lastname,  color: .c686868, isFocused: $isKeyboardVisible, type: .lastName)
-                                .id(FocusableField.lastName)
-                                .focused($isKeyboardVisible, equals: .lastName)
-                            
-                            MainTextField(placeholder: R.string.localizable.jobTitle(), text: $viewModel.jobTitle, color: .c686868, isFocused: $isKeyboardVisible, type: .jobTitle)
-                                .id(FocusableField.jobTitle)
-                                .focused($isKeyboardVisible, equals: .jobTitle)
-                            
-                            MainTextField(placeholder: R.string.localizable.mail(), text: $viewModel.email, color: .c686868, isFocused: $isKeyboardVisible, type: .email)
-                                .id(FocusableField.email)
-                                .focused($isKeyboardVisible, equals: .email)
-                            
-                            MainTextField(placeholder: R.string.localizable.phoneNumber(), text: $viewModel.phone, color: .c686868, isFocused: $isKeyboardVisible, type: .phone)
-                                .id(FocusableField.phone)
-                                .focused($isKeyboardVisible, equals: .phone)
-                            
-                            MainTextField(placeholder: R.string.localizable.site(), text: $viewModel.site, color: .c686868, isFocused: $isKeyboardVisible, type: .site)
-                                .id(FocusableField.site)
-                                .focused($isKeyboardVisible, equals: .site)
-                            
-                            MainTextEditor(placeholder: R.string.localizable.summary(), text: $viewModel.summary, color: .c686868, isFocused: $isKeyboardVisible, type: .summary)
-                                .id(FocusableField.summary)
-                                .focused($isKeyboardVisible, equals: .summary)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    Button {
-                        //createcvCoverz
-                    } label: {
-                        Text(R.string.localizable.finish())
-                            .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
-                            .foregroundStyle(viewModel.selectedCV != nil ? .blackMain : .cA1A1A1)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .background(viewModel.selectedCV != nil ? .cE1FF41 : .c686868)
-                            .clipShape(RoundedRectangle(cornerRadius: 32))
-                            .contentShape(Rectangle())
-                            .disabled(viewModel.selectedCV == nil)
-                    }
-                    .buttonStyle(ScaleButtonStyle())
-                    .padding(.horizontal, 16)
-                }
-                .onAppear {
-                    viewModel.prefill()
-                }
-                .presentationDetents([.fraction(0.985)])
-                .presentationDragIndicator(.visible)
-                .background(.c393939)
-                .if(true) { view in
-                    Group {
-                        if #available(iOS 16.4, *) {
-                            view.presentationCornerRadius(32)
-                        } else {
-                            view
-                        }
-                    }
-                }
-                .alert(R.string.localizable.clr(), isPresented: $viewModel.isCloseResumeAlert, actions:  {
-                    Button(R.string.localizable.saveTemplate(), action: {
-                        viewModel.saveCoverLetterChanges()
-                        isFillCoverLetterPresented = false
-                        
-                        iscvHistoryPresented = false
-                    })
-                    Button(R.string.localizable.exitWithoutSaving(), action: {
-                        isFillCoverLetterPresented = false
-                        iscvHistoryPresented = false
-                    })
-                    Button(R.string.localizable.cancel(), role: .cancel, action: {
-                        
-                    })
-                }, message: {
-                    Text(R.string.localizable.areyousurecl())
+                    iscvHistoryPresented = false
                 })
-            }
+                Button(R.string.localizable.exitWithoutSaving(), action: {
+                    isFillExternalCoverLetterPresented = false
+                    iscvHistoryPresented = false
+                })
+                Button(R.string.localizable.cancel(), role: .cancel, action: {
+                    
+                })
+            }, message: {
+                Text(R.string.localizable.areyousurecl())
+            })
         }
-        
     }
     
     @ViewBuilder
     private func coverCard(item: CoverLetterItem, index: Int) -> some View {
         Button {
-            // viewModel.openResultView(historyItem: item)
+            viewModel.selectedCoverLetter = item
+            isFillExternalCoverLetterPresented = true
         } label: {
             ZStack {
                 AngledNotchCardShape(
@@ -271,6 +213,7 @@ struct CoverLetterView: View {
                     
                     Menu {
                         Button {
+                            
                         } label: {
                             Text(R.string.localizable.edit)
                                 .font(.system(size: 17))
@@ -306,7 +249,7 @@ struct CoverLetterView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
-                                    .foregroundStyle(.blackMain)
+                                    .foregroundStyle(.white)
                             )
                     }
                     .frame(alignment: .trailing)
@@ -360,6 +303,245 @@ struct CoverLetterView: View {
             }
         }
         .buttonStyle(ScaleButtonStyle())
+    }
+    
+    
+    @ViewBuilder private func coverSheets() -> some View {
+        VStack {
+            HStack {
+                Button {
+                    iscvHistoryPresented = false
+                } label: {
+                    Image(.cross)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 10, height: 10)
+                }
+                .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+                .padding(.top, 20)
+                .padding(.horizontal, 16)
+                
+                Spacer()
+            }
+            
+            ScrollView {
+                HStack {
+                    Text(R.string.localizable.selectYourResume)
+                        .font(Font(R.font.figtreeRegular.callAsFunction(size: 30)!))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                }
+                .padding(.horizontal, 16)
+                
+                if !viewModel.historyItems.isEmpty {
+                    VStack(spacing: 24) {
+                        ForEach(Array(viewModel.historyItems.enumerated()), id: \.element.id) { index, item in
+                            cvCard(item: item, index: index)
+                        }
+                    }
+                }
+            }
+            .overlay {
+                if viewModel.historyItems.isEmpty {
+                    VStack(spacing: 0) {
+                        Circle().fill(.gray.opacity(0.6))
+                            .frame(width: 120, height: 120)
+                            .overlay {
+                                Image(.noHistory)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 80, height: 78.33)
+                            }
+                        
+                        Text(R.string.localizable.itSEmptyHereYet)
+                            .font(Font(R.font.figtreeRegular.callAsFunction(size: 20)!))
+                            .padding(.top, 16)
+                        
+                        Text(R.string.localizable.cxde)
+                            .font(Font(R.font.figtreeRegular.callAsFunction(size: 16)!))
+                            .foregroundStyle(.cA1A1A1)
+                            .padding(.top, 8)
+                        
+                        Button {
+                            iscvHistoryPresented = false
+                            
+                            viewModel.showResumeTemplates()
+                            
+                        } label: {
+                            Text(R.string.localizable.create())
+                                .font(Font(R.font.figtreeSemiBold(size: 20)!))
+                                .foregroundColor(.blackMain)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 60)
+                                .background(Color.cE1FF41)
+                                .clipShape(RoundedRectangle(cornerRadius: 32))
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        .padding(.top, 20)
+                        .padding(.horizontal, 16)
+                    }
+                }
+            }
+            
+            VStack(spacing: 16) {
+                Button {
+                    iscvHistoryPresented = false
+                } label: {
+                    Text(R.string.localizable.notNow())
+                        .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                    
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 32)
+                                .stroke(.cE1FF41, lineWidth: 1)
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(ScaleButtonStyle())
+                
+                Button {
+                    isFillCoverLetterPresented = true
+                } label: {
+                    Text(R.string.localizable.select())
+                        .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                        .foregroundStyle(viewModel.selectedCV != nil ? .blackMain : .cA1A1A1)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(viewModel.selectedCV != nil ? .cE1FF41 : .c686868)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .contentShape(Rectangle())
+                        .disabled(viewModel.selectedCV == nil)
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
+            .padding(.bottom, 8)
+            .padding(.horizontal, 16)
+        }
+        .presentationDetents([.fraction(0.985)])
+        .presentationDragIndicator(.visible)
+        .background(.c393939)
+        .if(true) { view in
+            Group {
+                if #available(iOS 16.4, *) {
+                    view.presentationCornerRadius(32)
+                } else {
+                    view
+                }
+            }
+        }
+        .sheet(isPresented: $isFillCoverLetterPresented) {
+            VStack {
+                HStack {
+                    Button {
+                        viewModel.isCloseResumeAlert = true
+                    } label: {
+                        Image(.cross)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 10, height: 10)
+                    }
+                    .buttonStyle(CircularButton(opacity: 0.3, color: .c686868))
+                    .padding(.top, 20)
+                    .padding(.horizontal, 16)
+                    
+                    Spacer()
+                }
+                
+                ScrollView {
+                    VStack(spacing: 8) {
+                        MainTextField(placeholder: R.string.localizable.firstName(),  text: $viewModel.firstname,  color: .c686868, isFocused: $isKeyboardVisible, type: .firstName)
+                            .id(FocusableField.firstName)
+                            .focused($isKeyboardVisible, equals: .firstName)
+                        
+                        MainTextField(placeholder: R.string.localizable.lastName(), text: $viewModel.lastname,  color: .c686868, isFocused: $isKeyboardVisible, type: .lastName)
+                            .id(FocusableField.lastName)
+                            .focused($isKeyboardVisible, equals: .lastName)
+                        
+                        MainTextField(placeholder: R.string.localizable.jobTitle(), text: $viewModel.jobTitle, color: .c686868, isFocused: $isKeyboardVisible, type: .jobTitle)
+                            .id(FocusableField.jobTitle)
+                            .focused($isKeyboardVisible, equals: .jobTitle)
+                        
+                        
+                        MainTextField(placeholder: R.string.localizable.companyName(), text: $viewModel.coverLetterCompanyName, color: .c686868, isFocused: $isKeyboardVisible, type: .companyName)
+                            .id(FocusableField.jobTitle)
+                            .focused($isKeyboardVisible, equals: .companyName)
+                        
+                        MainTextField(placeholder: R.string.localizable.mail(), text: $viewModel.email, color: .c686868, isFocused: $isKeyboardVisible, type: .email)
+                            .id(FocusableField.email)
+                            .focused($isKeyboardVisible, equals: .email)
+                        
+                        MainTextField(placeholder: R.string.localizable.phoneNumber(), text: $viewModel.phone, color: .c686868, isFocused: $isKeyboardVisible, type: .phone)
+                            .id(FocusableField.phone)
+                            .focused($isKeyboardVisible, equals: .phone)
+                        
+                        MainTextField(placeholder: R.string.localizable.site(), text: $viewModel.site, color: .c686868, isFocused: $isKeyboardVisible, type: .site)
+                            .id(FocusableField.site)
+                            .focused($isKeyboardVisible, equals: .site)
+                        
+                        MainTextEditor(placeholder: R.string.localizable.summary(), text: $viewModel.summary, color: .c686868, isFocused: $isKeyboardVisible, type: .summary)
+                            .id(FocusableField.summary)
+                            .focused($isKeyboardVisible, equals: .summary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                
+                Button {
+                    isFillCoverLetterPresented = false
+                    iscvHistoryPresented = false
+                    viewModel.showResult()
+                } label: {
+                    Text(R.string.localizable.finish())
+                        .font(Font(R.font.figtreeSemiBold.callAsFunction(size: 20)!))
+                        .foregroundStyle(viewModel.couldGoNext ? .blackMain : .cA1A1A1)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(viewModel.couldGoNext ? .cE1FF41 : .c686868)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .contentShape(Rectangle())
+                        .disabled(!viewModel.couldGoNext)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.horizontal, 16)
+            }
+            .onAppear {
+                viewModel.prefill()
+            }
+            .presentationDetents([.fraction(0.985)])
+            .presentationDragIndicator(.visible)
+            .background(.c393939)
+            .if(true) { view in
+                Group {
+                    if #available(iOS 16.4, *) {
+                        view.presentationCornerRadius(32)
+                    } else {
+                        view
+                    }
+                }
+            }
+            .alert(R.string.localizable.clr(), isPresented: $viewModel.isCloseResumeAlert, actions:  {
+                Button(R.string.localizable.saveTemplate(), action: {
+                    viewModel.saveCoverLetterChanges()
+                    isFillCoverLetterPresented = false
+                    
+                    iscvHistoryPresented = false
+                })
+                Button(R.string.localizable.exitWithoutSaving(), action: {
+                    isFillCoverLetterPresented = false
+                    iscvHistoryPresented = false
+                })
+                Button(R.string.localizable.cancel(), role: .cancel, action: {
+                    
+                })
+            }, message: {
+                Text(R.string.localizable.areyousurecl())
+            })
+        }
     }
     
     private func fillColor(for index: Int) -> Color {

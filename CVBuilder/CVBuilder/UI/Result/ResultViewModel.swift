@@ -27,15 +27,21 @@ final class ResultViewModel: ObservableObject {
     
     let isResult: Bool
     let historyItem: HistoryItem?
-     
+    let isCover: Bool
+    let cvConstructor: CVConstructor?
     var historySaved: Bool = false
     
     init(coordinator: Coordinator,
          chosenTemplate: CVTemplate,
          isResult: Bool,
-         historyItem: HistoryItem?) {
+         historyItem: HistoryItem?,
+         isCover: Bool = false,
+         cvConstructor: CVConstructor?
+    ) {
         self.coordinator = coordinator
         self.chosenTemplate = chosenTemplate
+        self.isCover = isCover
+        self.cvConstructor = cvConstructor
         self.isResult = isResult
         self.historyItem = historyItem
         self.currentIndex = templatesList.firstIndex {
@@ -81,26 +87,56 @@ final class ResultViewModel: ObservableObject {
     func generateCV() {
         guard let data = keychain.user?.savedData else { return }
         
-        Task {
-            let result = await generator.build(with: chosenTemplate, cvConstructor: data)
-            await MainActor.run {
-                if let result = result {
-                    self.pdfDocument = result.doc
-                    self.fileData = result.fileData
-                    self.previewImage = result.previewImage
-                     
-                    if !self.historySaved, let fileData = self.fileData {
-                        let fileName = self.chosenTemplate.fileToUseString
-                        let documentsURL = FileManager.default.urls(for: .documentDirectory,
-                                                                    in: .userDomainMask).first!
-                        let fileURL = documentsURL.appendingPathComponent(fileName)
+        if !isCover {
+            Task {
+                let result = await generator.build(with: chosenTemplate, cvConstructor: data)
+                await MainActor.run {
+                    if let result = result {
+                        self.pdfDocument = result.doc
+                        self.fileData = result.fileData
+                        self.previewImage = result.previewImage
                         
-                        do {
-                            try fileData.write(to: fileURL)
-                            self.saveCVToHistory(jobTitle: self.obtainJobTitleFromData(), fullName: data.firstname + " " + data.lastname, fileURL: fileURL)
-                            self.historySaved = true
-                        } catch {
-                            print("Error saving PDF in generateCV: \(error)")
+                        if !self.historySaved, let fileData = self.fileData {
+                            let fileName = self.chosenTemplate.fileToUseString
+                            let documentsURL = FileManager.default.urls(for: .documentDirectory,
+                                                                        in: .userDomainMask).first!
+                            let fileURL = documentsURL.appendingPathComponent(fileName)
+                            
+                            do {
+                                try fileData.write(to: fileURL)
+                                self.saveCVToHistory(jobTitle: self.obtainJobTitleFromData(), fullName: data.firstname + " " + data.lastname, fileURL: fileURL)
+                                self.historySaved = true
+                            } catch {
+                                print("Error saving PDF in generateCV: \(error)")
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            guard let cvConstructor else { return }
+            Task {
+       
+                let result = await generator.build(cvConstructor: cvConstructor)
+                await MainActor.run {
+                    if let result = result {
+                        self.pdfDocument = result.doc
+                        self.fileData = result.fileData
+                        self.previewImage = result.previewImage
+                        
+                        if !self.historySaved, let fileData = self.fileData {
+                            let fileName = "Coverletter"
+                            let documentsURL = FileManager.default.urls(for: .documentDirectory,
+                                                                        in: .userDomainMask).first!
+                            let fileURL = documentsURL.appendingPathComponent(fileName)
+                            
+                            do {
+                                try fileData.write(to: fileURL)
+                                self.saveCVToHistory(jobTitle: self.obtainJobTitleFromData(), fullName: data.firstname + " " + data.lastname, fileURL: fileURL)
+                                self.historySaved = true
+                            } catch {
+                                print("Error saving PDF in generateCV: \(error)")
+                            }
                         }
                     }
                 }
@@ -193,12 +229,22 @@ final class ResultViewModel: ObservableObject {
         let fileName = fileURL.lastPathComponent
         let creationDate = Date()
         
-        HistoryItemRepository.shared.createHistoryItem(
-            jobTitle: jobTitle,
-            creationDate: creationDate, fullName: fullName,
-            filePath: fileName,
-            cvConstructor: keychain.user?.savedData
-        )
+        if isCover {
+            HistoryItemRepository.shared.createCoverLetterItem(
+                jobTitle: jobTitle,
+                creationDate: creationDate, fullName: fullName,
+                filePath: fileName,
+                cvConstructor: cvConstructor
+            )
+        } else {
+            
+            HistoryItemRepository.shared.createHistoryItem(
+                jobTitle: jobTitle,
+                creationDate: creationDate, fullName: fullName,
+                filePath: fileName,
+                cvConstructor: keychain.user?.savedData
+            )
+        }
         
         objectWillChange.send()
     }

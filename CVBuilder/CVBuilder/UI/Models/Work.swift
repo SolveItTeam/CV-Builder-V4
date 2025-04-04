@@ -35,12 +35,13 @@ struct CVConstructor: Codable {
     var summary: String
     var jobTitle: String
     var site: String
-    var location: String
+    var location: String 
     var workExperience: [WorkExperienceInput]
     var education: [EducationInput]
     var skills: [SkillInput]
     var languages: [Language]
     var profileImagePath: String?
+    var coverLetterCompanyName: String?
 }
 
 struct WorkExperienceInput: Identifiable, Hashable, Codable {
